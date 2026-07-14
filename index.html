@@ -1886,6 +1886,53 @@
 </head>
 
 <body>
+    <!-- ERP Secure Login Overlay -->
+    <div id="erpLoginOverlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 999999; background: radial-gradient(circle at center, #0d1625 0%, #05080e 100%); display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; transition: opacity 0.4s ease;">
+        <div class="card" style="width: 100%; max-width: 440px; padding: 2.5rem; background: rgba(13, 22, 37, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); backdrop-filter: blur(15px); text-align: center;">
+            <div style="width: 72px; height: 72px; background: rgba(0, 162, 232, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; border: 1px solid rgba(0, 162, 232, 0.3); box-shadow: 0 0 20px rgba(0, 162, 232, 0.15);">
+                <i class="fas fa-lock" style="font-size: 1.8rem; color: #00a2e8;"></i>
+            </div>
+            
+            <h2 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem 0; letter-spacing: -0.5px;">Acceso Seguro ERP</h2>
+            <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); line-height: 1.5; margin: 0 0 2rem 0; padding: 0 0.5rem;">
+                Ingrese sus credenciales administrativas para sincronizar con el software de producción y finanzas ERP.
+            </p>
+
+            <form id="erpLoginForm" onsubmit="handleErpLogin(event)" style="text-align: left;">
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Usuario ERP</label>
+                    <div style="position: relative;">
+                        <i class="fas fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 0.85rem;"></i>
+                        <input type="text" id="erpUsername" required placeholder="admin" style="width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); color: #fff; font-size: 0.95rem; outline: none; transition: all 0.3s; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">Contraseña</label>
+                    <div style="position: relative;">
+                        <i class="fas fa-key" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 0.85rem;"></i>
+                        <input type="password" id="erpPassword" required placeholder="••••••••" style="width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.25); color: #fff; font-size: 0.95rem; outline: none; transition: all 0.3s; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div id="erpLoginError" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1.5rem; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Credenciales incorrectas. Intente nuevamente.</span>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 0.9rem; border-radius: 10px; border: none; background: #00a2e8; color: #fff; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0, 162, 232, 0.35);" onmouseover="this.style.background='#008ac4'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#00a2e8'; this.style.transform='none';">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión ERP
+                </button>
+            </form>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.06); margin: 2rem 0 1rem 0; padding-top: 1.25rem;">
+                <p style="font-size: 0.75rem; color: rgba(255,255,255,0.35); font-weight: 500; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                    <i class="fas fa-shield-alt" style="color: #10b981;"></i> Conexión encriptada SSL de 256 bits
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">
         <i class="fas fa-bars"></i>
@@ -1902,11 +1949,12 @@
         <nav class="sidebar-nav">
             <div class="nav-section">
                 <div class="nav-section-title">Principal</div>
-                <a class="nav-item active" data-page="dashboard">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
+                <a class="nav-item" data-page="companies">
+                    <i class="fas fa-building"></i>
+                    <span>Empresas</span>
+                    <span class="badge" id="companiesCount">0</span>
                 </a>
-                <a class="nav-item" data-page="customers">
+                <a class="nav-item active" data-page="customers">
                     <i class="fas fa-users"></i>
                     <span>Clientes</span>
                     <span class="badge" id="customersCount">0</span>
@@ -1958,6 +2006,10 @@
                     <i class="fas fa-cog"></i>
                     <span>Configuración</span>
                 </a>
+                <a class="nav-item" onclick="handleErpLogout()" style="cursor: pointer; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem; color: #fb7185; transition: color 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#fb7185'">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
             </div>
         </nav>
 
@@ -1971,7 +2023,7 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Dashboard Page -->
-        <section id="dashboard" class="page-section active">
+        <section id="dashboard" class="page-section">
             <!-- DASHBOARD REDESIGN: Scientific Luxury Bento Grid -->
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
@@ -2998,8 +3050,67 @@
             </div>
         </section>
 
+        <!-- Companies Page -->
+        <section id="companies" class="page-section">
+            <div class="page-header">
+                <h2>🏢 Empresas</h2>
+                <div class="actions">
+                    <button class="btn btn-outline" onclick="exportCompanies()">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
+                    <button class="btn btn-secondary" onclick="importCompaniesFile()">
+                        <i class="fas fa-file-import"></i> Importar
+                    </button>
+                    <button class="btn btn-danger" id="deleteSelectedCompaniesBtn" style="display: none;"
+                        onclick="deleteSelectedCompanies()">
+                        <i class="fas fa-trash-alt"></i> Eliminar (<span id="selectedCompaniesCount">0</span>)
+                    </button>
+                    <button class="btn btn-danger" style="background: var(--gradient-2);"
+                        onclick="deleteAllCompanies()">
+                        <i class="fas fa-trash"></i> Todo
+                    </button>
+                    <button class="btn btn-primary" onclick="showNewCompanyModal()">
+                        <i class="fas fa-building"></i> Nueva Empresa
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" id="selectAllCompanies"
+                                        onchange="toggleSelectAllCompanies()">
+                                </th>
+                                <th>Empresa</th>
+                                <th>RUT</th>
+                                <th>Contacto Principal</th>
+                                <th>Cotizaciones</th>
+                                <th>Total Ventas</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="companiesTableBody">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <i class="fas fa-building"></i>
+                                        <h3>No hay empresas registradas</h3>
+                                        <p>Comienza agregando tu primera empresa</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- Customers Page -->
-        <section id="customers" class="page-section">
+        <section id="customers" class="page-section active">
             <div class="page-header">
                 <h2>👥 Clientes</h2>
                 <div class="actions">
@@ -3076,6 +3187,61 @@
                     <button class="btn btn-primary" onclick="showNewQuotationModal()">
                         <i class="fas fa-plus"></i> Nueva Cotización
                     </button>
+                </div>
+            </div>
+
+            <!-- Quotations Metrics Cards -->
+            <div class="grid grid-4" style="margin-bottom: 2rem;">
+                <!-- Card 1: Total Valor en Cotizaciones Ganadas -->
+                <div class="stat-card green">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div class="stat-label" style="font-size: 0.85rem; font-weight: 600; color: var(--gray);">Total Valor en Cotizaciones Ganadas</div>
+                            <div class="stat-value" id="quoteMetricGanadas" style="font-size: 1.5rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);">$0</div>
+                        </div>
+                        <div class="stat-icon" style="margin-bottom: 0; width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Total en Cotizaciones Perdidas -->
+                <div class="stat-card pink">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div class="stat-label" style="font-size: 0.85rem; font-weight: 600; color: var(--gray);">Total en Cotizaciones Perdidas</div>
+                            <div class="stat-value" id="quoteMetricPerdidas" style="font-size: 1.5rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);">$0</div>
+                        </div>
+                        <div class="stat-icon" style="margin-bottom: 0; width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Total en Utilidad en Cotizaciones Ganadas -->
+                <div class="stat-card blue">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div class="stat-label" style="font-size: 0.85rem; font-weight: 600; color: var(--gray);">Total en Utilidad en Cotizaciones Ganadas</div>
+                            <div class="stat-value" id="quoteMetricUtilidad" style="font-size: 1.5rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);">$0</div>
+                        </div>
+                        <div class="stat-icon" style="margin-bottom: 0; width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Total en Cotizaciones por Ganar -->
+                <div class="stat-card purple">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div class="stat-label" style="font-size: 0.85rem; font-weight: 600; color: var(--gray);">Total en Cotizaciones por Ganar</div>
+                            <div class="stat-value" id="quoteMetricPorGanar" style="font-size: 1.5rem; font-weight: 800; margin-top: 0.25rem; color: var(--text-primary);">$0</div>
+                        </div>
+                        <div class="stat-icon" style="margin-bottom: 0; width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -3157,56 +3323,27 @@
                     </div>
                 </div>
 
-                <!-- Stage Breakdown and Funnel -->
-                <div class="grid grid-2" style="gap: 1rem;">
-                    <!-- Totals by Stage Table Card -->
-                    <div class="card" style="padding: 1.5rem;">
-                        <h3
-                            style="font-size: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-                            💰 Resumen Financiero por Etapa</h3>
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(102, 126, 234, 0.1); border-radius: 6px;">
-                                <span><i class="fas fa-file-invoice"></i> Cotización</span>
-                                <strong id="valCotizacion" style="color: #667eea;">$0</strong>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(240, 147, 251, 0.1); border-radius: 6px;">
-                                <span><i class="fas fa-handshake"></i> Negociación</span>
-                                <strong id="valNegociacion" style="color: #f093fb;">$0</strong>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(56, 189, 248, 0.1); border-radius: 6px;">
-                                <span><i class="fas fa-industry"></i> Fabricación</span>
-                                <strong id="valFabricacion" style="color: #4facfe;">$0</strong>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(var(--warning-rgb), 0.1); border-radius: 6px;">
-                                <span><i class="fas fa-hand-holding-usd"></i> Pendiente de Pago</span>
-                                <strong id="valPendientePago" style="color: var(--warning);">$0</strong>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(var(--success-rgb), 0.1); border-radius: 6px;">
-                                <span><i class="fas fa-check-circle"></i> Terminado</span>
-                                <strong id="valTerminado" style="color: #43e97b;">$0</strong>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(var(--danger-rgb), 0.1); border-radius: 6px;">
-                                <span><i class="fas fa-times-circle"></i> Perdido</span>
-                                <strong id="valPerdido" style="color: var(--danger);">$0</strong>
-                            </div>
-                        </div>
+                <!-- Desglose por Etapa del Pipeline -->
+                <div class="card" style="padding: 1.25rem; margin-top: 1rem; border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(13, 22, 37, 0.3); border-radius: 12px;">
+                    <h4 style="margin-top: 0; margin-bottom: 1rem; font-size: 0.9rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="fas fa-layer-group" style="color: var(--secondary);"></i> Valores y Oportunidades por Etapa
+                    </h4>
+                    <div id="pipelineStagesBreakdown" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem;">
+                        <!-- Rendered dynamically in app.js -->
                     </div>
+                </div>
+            </div>
 
-                    <!-- Funnel Chart Card -->
-                    <div class="card" style="padding: 1.5rem; display: flex; flex-direction: column;">
-                        <h3
-                            style="font-size: 1rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-                            📊 Embudo de Conversión</h3>
-                        <div style="flex: 1; min-height: 250px; position: relative;">
-                            <canvas id="pipelineFunnelChart"></canvas>
-                        </div>
-                    </div>
+            <!-- Pipeline Quick Search Bar -->
+            <div class="card" style="padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(13, 22, 37, 0.4); border-radius: 12px; backdrop-filter: blur(8px);">
+                <div style="position: relative; flex: 1;">
+                    <i class="fas fa-search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--secondary); opacity: 0.8; pointer-events: none; font-size: 1.1rem;"></i>
+                    <input type="text" id="pipelineSearchInput" class="form-control" placeholder="Buscar por cliente o proyecto (items de la cotización)..." style="padding-left: 3.25rem; background: rgba(13, 22, 37, 0.6); border-color: rgba(255, 255, 255, 0.1); width: 100%; border-radius: 8px; font-size: 0.95rem; height: 46px; transition: all 0.3s;" onkeyup="filterPipelineVisually()">
+                </div>
+                <div id="pipelineSearchClear" style="display: none;">
+                    <button class="btn btn-sm btn-outline" onclick="clearPipelineSearch()" style="height: 46px; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem; padding: 0 1.25rem; background: rgba(255, 255, 255, 0.02); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); font-weight: 500;">
+                        <i class="fas fa-times-circle" style="color: var(--secondary);"></i> Limpiar
+                    </button>
                 </div>
             </div>
 
@@ -3403,58 +3540,69 @@
                 </div>
             </div>
 
-            <!-- Charts Grid Layer 1 -->
-            <div class="grid grid-2" style="margin-bottom: 2rem;">
-                <div class="card" style="padding: 1.5rem;">
-                    <div class="card-header" style="margin-bottom: 1.5rem;">
-                        <h3 class="card-title"><i class="fas fa-chart-line" style="color: var(--primary);"></i>
-                            Tendencia de Ventas (6 meses)</h3>
+            <!-- Calendar Grid Layer -->
+            <div style="margin-bottom: 2rem;">
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; backdrop-filter: blur(8px);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                        <h3 class="card-title" style="margin: 0; font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="far fa-calendar-alt" style="color: var(--primary);"></i>
+                            Calendario de Ventas y Actividades
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-outline" onclick="changeCalendarMonth(-1)" style="padding: 0.5rem 0.75rem; min-width: auto; border-radius: 6px; border-color: rgba(255,255,255,0.1); color: #fff; background: transparent;">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-sm" onclick="setCalendarToToday()" style="padding: 0.5rem 1rem; border-radius: 6px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                                Hoy
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="changeCalendarMonth(1)" style="padding: 0.5rem 0.75rem; min-width: auto; border-radius: 6px; border-color: rgba(255,255,255,0.1); color: #fff; background: transparent;">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <span id="calendarMonthYear" style="font-family: 'Outfit'; font-weight: 700; font-size: 1.1rem; margin-left: 0.5rem; min-width: 140px; text-align: right; color: #fff;">Julio 2026</span>
+                        </div>
                     </div>
-                    <div class="chart-container" style="height: 300px;">
-                        <canvas id="reportSalesTrendChart"></canvas>
-                    </div>
-                </div>
+                    
+                    <div class="calendar-layout-grid">
+                        <!-- Calendar Side (Left) -->
+                        <div style="background: rgba(13, 22, 37, 0.4); border: 1px solid rgba(255,255,255,0.03); border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-bottom: 0.5rem;">
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Dom</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Lun</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Mar</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Mié</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Jue</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Vie</div>
+                                <div style="color: var(--text-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Sáb</div>
+                            </div>
+                            
+                            <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; flex-grow: 1; min-height: 280px;">
+                                <!-- Day cells generated dynamically -->
+                            </div>
+                        </div>
 
-                <div class="card" style="padding: 1.5rem;">
-                    <div class="card-header" style="margin-bottom: 1.5rem;">
-                        <h3 class="card-title"><i class="fas fa-tasks" style="color: var(--warning);"></i> Estado de
-                            Tareas</h3>
-                    </div>
-                    <div class="chart-container" style="height: 300px;">
-                        <canvas id="reportTasksChart"></canvas>
+                        <!-- Details Side (Right) -->
+                        <div style="background: rgba(13, 22, 37, 0.3); border: 1px solid rgba(255,255,255,0.03); border-radius: 10px; padding: 1.25rem; display: flex; flex-direction: column;">
+                            <h4 id="calendarDetailHeader" style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+                                <span>Detalle del Día</span>
+                                <span id="calendarDetailDate" style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary);">14 Jul 2026</span>
+                            </h4>
+                            <div id="calendarDetailContent" style="flex: 1; overflow-y: auto; max-height: 310px; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <!-- Dynamic day details -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts Grid Layer 2 -->
-            <div class="grid grid-3">
-                <div class="card" style="padding: 1.5rem;">
-                    <div class="card-header" style="margin-bottom: 1.5rem;">
-                        <h3 class="card-title"><i class="fas fa-filter" style="color: var(--secondary);"></i> Valor por
-                            Etapa</h3>
-                    </div>
-                    <div class="chart-container" style="height: 250px;">
-                        <canvas id="reportPipelineChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="card" style="padding: 1.5rem;">
-                    <div class="card-header" style="margin-bottom: 1.5rem;">
-                        <h3 class="card-title"><i class="fas fa-users" style="color: var(--success);"></i> Top Clientes
-                        </h3>
-                    </div>
-                    <div class="chart-container" style="height: 250px;">
-                        <canvas id="reportTopCustomersChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="card" style="padding: 1.5rem;">
-                    <div class="card-header" style="margin-bottom: 1.5rem;">
-                        <h3 class="card-title"><i class="fas fa-layer-group" style="color: var(--primary);"></i> Mezcla
-                            de Materiales</h3>
-                    </div>
-                    <div class="chart-container" style="height: 250px;">
-                        <canvas id="materialsChart"></canvas>
+            <!-- Pipeline Stage Breakdown in Reports Page -->
+            <div style="margin-top: 2rem;">
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; backdrop-filter: blur(8px);">
+                    <h3 class="card-title" style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: #fff;">
+                        <i class="fas fa-layer-group" style="color: var(--secondary);"></i>
+                        Valores y Oportunidades por Etapa de Venta (Pipeline)
+                    </h3>
+                    <div id="reportsPipelineStagesBreakdown" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem;">
+                        <!-- Rendered dynamically in app.js -->
                     </div>
                 </div>
             </div>
@@ -3783,6 +3931,64 @@
                         </button>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Guardar Cliente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Company Modal -->
+    <div id="newCompanyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nueva Empresa</h3>
+                <button class="modal-close" onclick="closeModal('newCompanyModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="newCompanyForm">
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Nombre Empresa *</label>
+                            <input type="text" class="form-control" name="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RUT Empresa *</label>
+                            <input type="text" class="form-control" name="rut" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contacto Principal *</label>
+                            <input type="text" class="form-control" name="contacto" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Teléfono *</label>
+                            <input type="tel" class="form-control" name="telefono" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" name="correo" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Giro Comercial</label>
+                            <input type="text" class="form-control" name="giro">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" name="direccion">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notas</label>
+                        <textarea class="form-control" name="notas"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('newCompanyModal')">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Empresa
                         </button>
                     </div>
                 </form>
@@ -4119,6 +4325,87 @@
                     bottom: calc(30px + env(safe-area-inset-bottom));
                 }
             }
+
+            /* Calendar styles */
+            .calendar-layout-grid {
+                display: grid;
+                grid-template-columns: 1.8fr 1fr;
+                gap: 1.5rem;
+                align-items: stretch;
+            }
+            @media (max-width: 768px) {
+                .calendar-layout-grid {
+                    grid-template-columns: 1fr !important;
+                }
+            }
+            .calendar-cell {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                border-radius: 8px;
+                padding: 0.35rem;
+                min-height: 52px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                position: relative;
+            }
+            .calendar-cell:hover {
+                background: rgba(255, 255, 255, 0.06);
+                border-color: rgba(255, 255, 255, 0.15);
+                transform: translateY(-1px);
+            }
+            .calendar-cell-other {
+                opacity: 0.25;
+            }
+            .calendar-cell-today {
+                background: rgba(255, 0, 102, 0.05);
+                border-color: rgba(255, 0, 102, 0.3);
+                box-shadow: inset 0 0 4px rgba(255, 0, 102, 0.1);
+            }
+            .calendar-cell-today .calendar-cell-day-num {
+                color: var(--primary);
+                font-weight: 800;
+            }
+            .calendar-cell-selected {
+                border-color: var(--secondary) !important;
+                background: rgba(240, 147, 251, 0.08) !important;
+                box-shadow: 0 0 10px rgba(240, 147, 251, 0.15);
+            }
+            .calendar-cell-day-num {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--text-secondary);
+                line-height: 1;
+            }
+            .calendar-cell-badge {
+                font-size: 0.65rem;
+                font-weight: 700;
+                background: rgba(67, 233, 123, 0.15);
+                color: #43e97b;
+                padding: 1px 4px;
+                border-radius: 4px;
+                align-self: flex-start;
+                margin-top: 2px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+                border: 1px solid rgba(67, 233, 123, 0.2);
+            }
+            .calendar-cell-dots {
+                display: flex;
+                gap: 3px;
+                margin-top: 2px;
+            }
+            .calendar-task-dot {
+                width: 5px;
+                height: 5px;
+                background: var(--warning);
+                border-radius: 50%;
+                box-shadow: 0 0 3px var(--warning);
+            }
         </style>
 
         <!-- Scripts -->
@@ -4191,6 +4478,58 @@
         #modalApproveBtn:hover {
             animation: pulse-soft 1.5s infinite ease-in-out;
             cursor: pointer;
+        }
+
+        /* --- Quotations Delete Buttons Custom Styling (Focus Mode) --- */
+        
+        /* Selector 1: Button to delete selected quotations */
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button#deleteSelectedQuotationsBtn:nth-of-type(2) {
+            background: rgba(251, 113, 133, 0.12) !important;
+            border: 1px solid rgba(251, 113, 133, 0.3) !important;
+            color: #fb7185 !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+        }
+
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button#deleteSelectedQuotationsBtn:nth-of-type(2):hover {
+            background: #fb7185 !important;
+            border-color: #fb7185 !important;
+            color: #ffffff !important;
+            transform: translateY(-2px) scale(1.03) !important;
+            box-shadow: 0 0 20px rgba(251, 113, 133, 0.5), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button#deleteSelectedQuotationsBtn:nth-of-type(2):active {
+            transform: translateY(0) scale(0.97) !important;
+            box-shadow: 0 0 8px rgba(251, 113, 133, 0.3) !important;
+        }
+
+        /* Selector 2: Button to delete all quotations */
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3) {
+            background: rgba(251, 113, 133, 0.04) !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            border: 1px dashed rgba(251, 113, 133, 0.2) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: none !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 600 !important;
+        }
+
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3):hover {
+            background: rgba(251, 113, 133, 0.15) !important;
+            color: #fb7185 !important;
+            border-color: #fb7185 !important;
+            transform: translateY(-2px) scale(1.03) !important;
+            box-shadow: 0 4px 12px rgba(251, 113, 133, 0.1) !important;
+        }
+
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3):active {
+            transform: translateY(0) scale(0.97) !important;
+            box-shadow: 0 0 8px rgba(251, 113, 133, 0.2) !important;
         }
 
         /* --- Library Delete Button, Cards, and Images Styles (Focus Mode Session) --- */

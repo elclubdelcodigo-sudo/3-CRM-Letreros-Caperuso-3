@@ -6,6 +6,7 @@
 // ============= DATA STRUCTURE =============
 let CRM = {
     customers: [],
+    companies: [],
     quotations: [],
     tasks: [],
     pipeline: [],
@@ -72,8 +73,75 @@ let shippingPrices = {
 // Carrito temporal para cotizaciones
 let carrito = [];
 
+// ============= ERP AUTHENTICATION SYSTEM =============
+function checkErpAuth() {
+    const overlay = document.getElementById('erpLoginOverlay');
+    if (!overlay) return;
+    
+    if (sessionStorage.getItem('erp_logged_in') === 'true') {
+        overlay.style.display = 'none';
+    } else {
+        overlay.style.display = 'flex';
+    }
+}
+
+window.handleErpLogin = function(event) {
+    if (event) event.preventDefault();
+    
+    const userEl = document.getElementById('erpUsername');
+    const passEl = document.getElementById('erpPassword');
+    const errorEl = document.getElementById('erpLoginError');
+    
+    if (!userEl || !passEl) return;
+    
+    const user = userEl.value.trim();
+    const pass = passEl.value;
+    
+    if (user === 'admin' && pass === 'Paine2016@') {
+        sessionStorage.setItem('erp_logged_in', 'true');
+        if (errorEl) errorEl.style.display = 'none';
+        
+        // Hide overlay with a smooth transition
+        const overlay = document.getElementById('erpLoginOverlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.style.opacity = '1'; // Reset opacity for next show
+            }, 400);
+        }
+        
+        // Reset fields
+        userEl.value = '';
+        passEl.value = '';
+    } else {
+        if (errorEl) {
+            errorEl.style.display = 'flex';
+            // Simple shake animation on the card
+            const card = document.querySelector('#erpLoginOverlay .card');
+            if (card) {
+                card.style.transform = 'translateX(10px)';
+                setTimeout(() => card.style.transform = 'translateX(-10px)', 100);
+                setTimeout(() => card.style.transform = 'translateX(5px)', 200);
+                setTimeout(() => card.style.transform = 'translateX(-5px)', 300);
+                setTimeout(() => card.style.transform = 'none', 400);
+            }
+        }
+    }
+};
+
+window.handleErpLogout = function() {
+    sessionStorage.removeItem('erp_logged_in');
+    const overlay = document.getElementById('erpLoginOverlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        overlay.style.opacity = '1';
+    }
+};
+
 // ============= INITIALIZATION =============
 document.addEventListener('DOMContentLoaded', function () {
+    checkErpAuth();
     loadData();
     populateIAQuotationSelect();
     initializeNavigation();
@@ -89,6 +157,9 @@ function loadData() {
         try {
             const data = JSON.parse(saved);
             CRM = { ...CRM, ...data };
+            if (!CRM.companies) {
+                CRM.companies = [];
+            }
         } catch (e) {
             console.error('Error loading data:', e);
         }
@@ -195,6 +266,9 @@ function navigateToPage(pageName) {
         case 'customers':
             loadCustomersTable();
             break;
+        case 'companies':
+            loadCompaniesTable();
+            break;
         case 'quotations':
             loadQuotationsTable();
             break;
@@ -226,13 +300,24 @@ function updateDashboard() {
         .filter(q => q.status === 'aprobada')
         .reduce((sum, q) => sum + (q.total || 0), 0);
 
-    document.getElementById('monthSales').textContent = formatPrecio(totalSales);
-    document.getElementById('totalCustomers').textContent = CRM.customers.length;
-    document.getElementById('activeQuotations').textContent = CRM.quotations.filter(q => q.status !== 'aprobada' && q.status !== 'rechazada').length;
+    const monthSalesEl = document.getElementById('monthSales');
+    if (monthSalesEl) monthSalesEl.textContent = formatPrecio(totalSales);
+
+    const totalCustomersEl = document.getElementById('totalCustomers');
+    if (totalCustomersEl) totalCustomersEl.textContent = CRM.customers.length;
+
+    const activeQuotationsEl = document.getElementById('activeQuotations');
+    if (activeQuotationsEl) activeQuotationsEl.textContent = CRM.quotations.filter(q => q.status !== 'aprobada' && q.status !== 'rechazada').length;
 
     // Update badges
-    document.getElementById('customersCount').textContent = CRM.customers.length;
-    document.getElementById('quotationsCount').textContent = CRM.quotations.length;
+    const customersCountEl = document.getElementById('customersCount');
+    if (customersCountEl) customersCountEl.textContent = CRM.customers.length;
+
+    const companiesCountEl = document.getElementById('companiesCount');
+    if (companiesCountEl) companiesCountEl.textContent = (CRM.companies || []).length;
+
+    const quotationsCountEl = document.getElementById('quotationsCount');
+    if (quotationsCountEl) quotationsCountEl.textContent = CRM.quotations.length;
 
     // Load activity feed
     loadActivityFeed();
@@ -243,6 +328,7 @@ function updateDashboard() {
 
 function loadActivityFeed() {
     const feed = document.getElementById('activityFeed');
+    if (!feed) return;
 
     if (CRM.quotations.length === 0 && CRM.customers.length === 0) {
         feed.innerHTML = `
@@ -339,6 +425,43 @@ document.addEventListener('DOMContentLoaded', function () {
             updateDashboard();
         });
     }
+
+    const companyForm = document.getElementById('newCompanyForm');
+    if (companyForm) {
+        companyForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const company = {
+                id: generateId(),
+                nombre: formData.get('nombre'),
+                rut: formData.get('rut'),
+                contacto: formData.get('contacto'),
+                telefono: formData.get('telefono'),
+                correo: formData.get('correo'),
+                giro: formData.get('giro'),
+                direccion: formData.get('direccion'),
+                notas: formData.get('notas'),
+                createdAt: new Date().toISOString(),
+                totalSales: 0,
+                quotationsCount: 0,
+                status: 'activo'
+            };
+
+            CRM.companies.push(company);
+            saveData();
+
+            closeModal('newCompanyModal');
+            this.reset();
+
+            showNotification('✅ Empresa agregada exitosamente', 'success');
+
+            if (document.getElementById('companies').classList.contains('active')) {
+                loadCompaniesTable();
+            }
+            updateDashboard();
+        });
+    }
 });
 
 function loadCustomersTable() {
@@ -407,6 +530,81 @@ function viewCustomer(id) {
     }
 }
 
+// ============= COMPANIES =============
+function showNewCompanyModal() {
+    document.getElementById('newCompanyModal').classList.add('active');
+}
+
+function loadCompaniesTable() {
+    const tbody = document.getElementById('companiesTableBody');
+    if (!tbody) return;
+
+    if (!CRM.companies || CRM.companies.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    <div class="empty-state">
+                        <i class="fas fa-building"></i>
+                        <h3>No hay empresas registradas</h3>
+                        <p>Comienza agregando tu primera empresa</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = CRM.companies.map(c => `
+        <tr>
+            <td><input type="checkbox" class="company-checkbox" value="${c.id}"></td>
+            <td>
+                <div class="customer-profile">
+                    <div class="customer-avatar">${getInitials(c.nombre)}</div>
+                    <div class="customer-info">
+                        <h4>${c.nombre}</h4>
+                        <p>${c.correo}</p>
+                    </div>
+                </div>
+            </td>
+            <td>${c.rut || '-'}</td>
+            <td>
+                ${c.contacto || '-'}<br>
+                <small style="color: var(--gray);">${c.telefono || ''}</small>
+            </td>
+            <td>${c.quotationsCount || 0}</td>
+            <td>${formatPrecio(c.totalSales || 0)}</td>
+            <td><span class="badge badge-success">Activo</span></td>
+            <td>
+                <button class="btn btn-sm" onclick="editCompany('${c.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm" onclick="viewCompany('${c.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--gradient-3);">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function editCompany(id) {
+    const company = CRM.companies.find(c => c.id === id);
+    if (company) {
+        showNotification('🔧 Función de edición de empresas en desarrollo', 'warning');
+    }
+}
+
+function viewCompany(id) {
+    const company = CRM.companies.find(c => c.id === id);
+    if (company) {
+        showNotification('🔧 Vista de detalle de empresas en desarrollo', 'warning');
+    }
+}
+
+window.showNewCompanyModal = showNewCompanyModal;
+window.loadCompaniesTable = loadCompaniesTable;
+window.editCompany = editCompany;
+window.viewCompany = viewCompany;
+
 // ============= QUOTATIONS =============
 function showNewQuotationModal() {
     navigateToPage('quoter');
@@ -441,7 +639,38 @@ function showNewQuotationModal() {
     }
 }
 
+function updateQuotationMetrics() {
+    const elGanadas = document.getElementById('quoteMetricGanadas');
+    const elPerdidas = document.getElementById('quoteMetricPerdidas');
+    const elUtilidad = document.getElementById('quoteMetricUtilidad');
+    const elPorGanar = document.getElementById('quoteMetricPorGanar');
+
+    const wonQuotes = CRM.quotations.filter(q => q.status === 'aprobada' || q.status === 'aprobado');
+    const wonTotal = wonQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
+    
+    const lostTotal = CRM.quotations.filter(q => q.status === 'rechazada' || q.status === 'rechazado').reduce((sum, q) => sum + (q.total || 0), 0);
+    
+    const wonUtility = wonQuotes.reduce((sum, q) => {
+        const qUtility = q.items ? q.items.reduce((itemSum, item) => {
+            const utilPerUnit = item.detalles && typeof item.detalles.utilidadPorUnidad === 'number' 
+                ? item.detalles.utilidadPorUnidad 
+                : 0;
+            const qty = typeof item.cantidad === 'number' ? item.cantidad : 1;
+            return itemSum + (utilPerUnit * qty);
+        }, 0) : 0;
+        return sum + qUtility;
+    }, 0);
+    
+    const pendingTotal = CRM.quotations.filter(q => q.status !== 'aprobada' && q.status !== 'aprobado' && q.status !== 'rechazada' && q.status !== 'rechazado').reduce((sum, q) => sum + (q.total || 0), 0);
+
+    if (elGanadas) elGanadas.textContent = formatPrecio(wonTotal);
+    if (elPerdidas) elPerdidas.textContent = formatPrecio(lostTotal);
+    if (elUtilidad) elUtilidad.textContent = formatPrecio(wonUtility);
+    if (elPorGanar) elPorGanar.textContent = formatPrecio(pendingTotal);
+}
+
 function loadQuotationsTable() {
+    updateQuotationMetrics();
     const tbody = document.getElementById('quotationsTableBody');
 
     if (CRM.quotations.length === 0) {
@@ -467,20 +696,41 @@ function loadQuotationsTable() {
             'rechazada': 'badge-danger'
         }[q.status] || 'badge-warning';
 
-        const approveButton = q.status !== 'aprobada' ? `
-            <button class="btn btn-sm" onclick="approveQuotation('${q.id}', this)" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--gradient-4); color: white; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.4); display: flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Aprobar Cotización">
-                <i class="fas fa-check-circle"></i> Aprobar
+        let approveButton = '';
+        if (q.status === 'aprobada') {
+            approveButton = `
+                <span class="badge badge-success" style="padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; box-shadow: 0 2px 8px rgba(67, 233, 123, 0.2);">
+                    <i class="fas fa-check-circle"></i> Aprobada
+                </span>
+            `;
+        } else if (q.status === 'rechazada') {
+            approveButton = `
+                <span class="badge badge-danger" style="padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; background: var(--danger); color: white; box-shadow: 0 2px 8px rgba(251, 113, 133, 0.2);">
+                    <i class="fas fa-times-circle"></i> Perdida
+                </span>
+            `;
+        } else {
+            approveButton = `
+                <button class="btn btn-sm" onclick="approveQuotation('${q.id}', this)" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--gradient-4); color: white; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.4); display: flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Aprobar Cotización">
+                    <i class="fas fa-check-circle"></i> Aprobar
+                </button>
+            `;
+        }
+
+        const lostOrReactivateButton = q.status === 'rechazada' ? `
+            <button class="btn btn-sm" onclick="reactivateQuotation('${q.id}')" style="padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: white; border-radius: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Reactivar Cotización">
+                <i class="fas fa-undo"></i>
             </button>
         ` : `
-            <span class="badge badge-success" style="padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; box-shadow: 0 2px 8px rgba(67, 233, 123, 0.2);">
-                <i class="fas fa-check-circle"></i> Aprobada
-            </span>
+            <button class="btn btn-sm" onclick="markQuotationAsLost('${q.id}')" style="padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--danger); color: white; border-radius: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Dar por Perdida">
+                <i class="fas fa-ban"></i>
+            </button>
         `;
 
 
         return `
             <tr>
-                <td><input type="checkbox" class="quotation-checkbox" value="${q.id}"></td>
+                <td><input type="checkbox" class="quotation-checkbox" value="${q.id}" onchange="updateSelectedQuotationsCount()"></td>
                 <td><strong>#${q.numero}</strong></td>
                 <td>${q.cliente?.nombre || 'Sin cliente'}</td>
                 <td>${formatDate(q.fecha)}</td>
@@ -498,6 +748,7 @@ function loadQuotationsTable() {
                     <button class="btn btn-sm" onclick="printQuotation('${q.id}')" style="padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--gradient-2);" title="Imprimir">
                         <i class="fas fa-print"></i>
                     </button>
+                    ${lostOrReactivateButton}
                 </td>
             </tr>
         `;
@@ -1094,6 +1345,56 @@ function approveQuotation(id, btn) {
     // We do NOT navigate away so the user can see it marked as 'aprobada' in the table
 }
 
+function markQuotationAsLost(id) {
+    const q = CRM.quotations.find(quote => quote.id === id);
+    if (!q) {
+        showNotification('❌ Cotización no encontrada', 'danger');
+        return;
+    }
+    if (confirm(`¿Estás seguro de que deseas marcar la cotización #${q.numero} como perdida?`)) {
+        q.previousStatus = q.status;
+        q.status = 'rechazada';
+        
+        // Update pipeline if it is there
+        const existingInPipeline = CRM.pipeline.find(p => p.quotationId === id);
+        if (existingInPipeline) {
+            existingInPipeline.previousStage = existingInPipeline.stage;
+            existingInPipeline.stage = 'Perdido';
+        }
+        
+        saveData();
+        loadQuotationsTable();
+        loadPipeline();
+        updateDashboard();
+        showNotification(`📉 Cotización #${q.numero} marcada como perdida`, 'warning');
+    }
+}
+
+function reactivateQuotation(id) {
+    const q = CRM.quotations.find(quote => quote.id === id);
+    if (!q) {
+        showNotification('❌ Cotización no encontrada', 'danger');
+        return;
+    }
+    if (confirm(`¿Deseas reactivar la cotización #${q.numero}?`)) {
+        q.status = q.previousStatus || 'borrador';
+        delete q.previousStatus;
+        
+        // Update pipeline if it is there
+        const existingInPipeline = CRM.pipeline.find(p => p.quotationId === id);
+        if (existingInPipeline) {
+            existingInPipeline.stage = existingInPipeline.previousStage || 'Cotizacion';
+            delete existingInPipeline.previousStage;
+        }
+        
+        saveData();
+        loadQuotationsTable();
+        loadPipeline();
+        updateDashboard();
+        showNotification(`🔄 Cotización #${q.numero} reactivada`, 'success');
+    }
+}
+
 function loadPipeline() {
     const stages = ['Cotizacion', 'Negociacion', 'Fabricacion', 'PendienteDePago', 'Terminado', 'Perdido'];
 
@@ -1167,11 +1468,238 @@ function loadPipeline() {
     // Update counts
     stages.forEach(stage => {
         const count = CRM.pipeline.filter(p => p.stage === stage).length;
-        const el = document.querySelector(`#pipeline${stage}`)?.parentElement?.querySelector('.pipeline-count');
-        if (el) {
-            el.textContent = count;
+        const total = CRM.pipeline.filter(p => p.stage === stage).reduce((sum, p) => sum + (p.total || 0), 0);
+
+        const countEl = document.querySelector(`#pipeline${stage}`)?.parentElement?.querySelector('.pipeline-count');
+        if (countEl) {
+            countEl.textContent = count;
+        }
+
+        const totalId = {
+            'Cotizacion': 'totalPipelineCotizacion',
+            'Negociacion': 'totalPipelineNegociacion',
+            'Fabricacion': 'totalPipelineFabricacion',
+            'PendienteDePago': 'totalPipelinePendientePago',
+            'Terminado': 'totalPipelineTerminado',
+            'Perdido': 'totalPipelinePerdido'
+        }[stage];
+
+        const totalEl = document.getElementById(totalId);
+        if (totalEl) {
+            totalEl.textContent = formatPrecio(total);
         }
     });
+
+    // Update main dashboard stats cards
+    let activeTotal = 0;
+    let activeCount = 0;
+    let priorityCount = 0;
+    let lostTotal = 0;
+
+    CRM.pipeline.forEach(p => {
+        if (p.stage === 'Perdido') {
+            lostTotal += p.total || 0;
+        } else {
+            activeTotal += p.total || 0;
+            activeCount++;
+            if (p.total >= 1000000) {
+                priorityCount++;
+            }
+        }
+    });
+
+    const valEl = document.getElementById('pipelineStatValue');
+    if (valEl) valEl.textContent = formatPrecio(activeTotal);
+
+    const statCountEl = document.getElementById('pipelineStatCount');
+    if (statCountEl) statCountEl.textContent = activeCount;
+
+    const priorityEl = document.getElementById('pipelineStatPriority');
+    if (priorityEl) priorityEl.textContent = priorityCount;
+
+    const lostEl = document.getElementById('pipelineStatLost');
+    if (lostEl) lostEl.textContent = formatPrecio(lostTotal);
+
+    // Render detailed breakdown of stages for both Pipeline and Reports page
+    const breakdownEl = document.getElementById('pipelineStagesBreakdown');
+    const reportsBreakdownEl = document.getElementById('reportsPipelineStagesBreakdown');
+    if (breakdownEl || reportsBreakdownEl) {
+        const stageDetails = [
+            { key: 'Cotizacion', label: 'Cotización', icon: 'fa-file-invoice-dollar', color: 'var(--primary)' },
+            { key: 'Negociacion', label: 'Negociación', icon: 'fa-comments', color: 'var(--secondary)' },
+            { key: 'Fabricacion', label: 'Fabricación', icon: 'fa-industry', color: 'var(--warning)' },
+            { key: 'PendienteDePago', label: 'Pendiente Pago', icon: 'fa-hand-holding-usd', color: '#06b6d4' },
+            { key: 'Terminado', label: 'Terminado', icon: 'fa-check-circle', color: 'var(--success)' },
+            { key: 'Perdido', label: 'Perdido', icon: 'fa-times-circle', color: 'var(--danger)' }
+        ];
+
+        const grandTotal = activeTotal + lostTotal;
+
+        const html = stageDetails.map(stage => {
+            const items = CRM.pipeline.filter(p => p.stage === stage.key);
+            const stageTotal = items.reduce((sum, p) => sum + (p.total || 0), 0);
+            const stageCount = items.length;
+            const pct = grandTotal > 0 ? ((stageTotal / grandTotal) * 100).toFixed(0) : 0;
+
+            return `
+                <div class="card" style="padding: 1rem; border-top: 3px solid ${stage.color}; background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between; gap: 0.5rem; transition: transform 0.2s; cursor: default;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--gray); display: flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas ${stage.icon}" style="color: ${stage.color};"></i> ${stage.label}
+                        </span>
+                        <span style="font-size: 0.65rem; background: rgba(255,255,255,0.06); padding: 0.15rem 0.4rem; border-radius: 10px; font-weight: 600; color: #fff;">
+                            ${stageCount} ${stageCount === 1 ? 'opt' : 'opts'}
+                        </span>
+                    </div>
+                    <div style="margin: 0.25rem 0;">
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #fff; font-family: 'Outfit';">${formatPrecio(stageTotal)}</div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--gray); margin-bottom: 0.25rem;">
+                            <span>Porcentaje</span>
+                            <span style="font-weight: bold; color: ${stage.color};">${pct}%</span>
+                        </div>
+                        <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                            <div style="width: ${pct}%; height: 100%; background: ${stage.color}; border-radius: 2px;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (breakdownEl) breakdownEl.innerHTML = html;
+        if (reportsBreakdownEl) reportsBreakdownEl.innerHTML = html;
+    }
+
+    // Apply quick search filter if any query is active
+    const searchInput = document.getElementById('pipelineSearchInput');
+    if (searchInput && searchInput.value.trim() !== '') {
+        filterPipelineVisually();
+    }
+}
+
+function filterPipelineVisually() {
+    const query = document.getElementById('pipelineSearchInput').value.toLowerCase().trim();
+    const clearBtn = document.getElementById('pipelineSearchClear');
+    
+    if (clearBtn) {
+        clearBtn.style.display = query ? 'block' : 'none';
+    }
+
+    const stages = ['Cotizacion', 'Negociacion', 'Fabricacion', 'PendienteDePago', 'Terminado', 'Perdido'];
+    
+    // Track visible counts and totals per stage
+    const stageCounts = {
+        'Cotizacion': 0,
+        'Negociacion': 0,
+        'Fabricacion': 0,
+        'PendienteDePago': 0,
+        'Terminado': 0,
+        'Perdido': 0
+    };
+    const stageTotals = {
+        'Cotizacion': 0,
+        'Negociacion': 0,
+        'Fabricacion': 0,
+        'PendienteDePago': 0,
+        'Terminado': 0,
+        'Perdido': 0
+    };
+
+    // Card items in the DOM
+    const cards = document.querySelectorAll('.pipeline-item');
+    cards.forEach(card => {
+        const itemId = card.dataset.itemId;
+        const item = CRM.pipeline.find(p => p.id === itemId);
+        if (!item) return;
+
+        const quotation = CRM.quotations.find(q => q.id === item.quotationId);
+        
+        // Build search string: client name + quotation number + item descriptions
+        let searchString = (item.cliente || '').toLowerCase();
+        if (quotation) {
+            searchString += ' #' + quotation.numero;
+            if (quotation.items) {
+                quotation.items.forEach(i => {
+                    searchString += ' ' + (i.descripcion || '').toLowerCase();
+                });
+            }
+        }
+
+        const isMatch = searchString.includes(query);
+        if (isMatch) {
+            card.style.display = '';
+            stageCounts[item.stage]++;
+            stageTotals[item.stage] += item.total || 0;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Update column headers with filtered counts and totals
+    stages.forEach(stage => {
+        const countEl = document.querySelector(`#pipeline${stage}`)?.parentElement?.querySelector('.pipeline-count');
+        if (countEl) {
+            countEl.textContent = stageCounts[stage];
+        }
+
+        const totalId = {
+            'Cotizacion': 'totalPipelineCotizacion',
+            'Negociacion': 'totalPipelineNegociacion',
+            'Fabricacion': 'totalPipelineFabricacion',
+            'PendienteDePago': 'totalPipelinePendientePago',
+            'Terminado': 'totalPipelineTerminado',
+            'Perdido': 'totalPipelinePerdido'
+        }[stage];
+
+        const totalEl = document.getElementById(totalId);
+        if (totalEl) {
+            totalEl.textContent = formatPrecio(stageTotals[stage]);
+        }
+    });
+
+    // Update dashboard cards based on filtered/visible items
+    let filteredActiveTotal = 0;
+    let filteredActiveCount = 0;
+    let filteredPriorityCount = 0;
+    let filteredLostTotal = stageTotals['Perdido'];
+
+    stages.forEach(stage => {
+        if (stage !== 'Perdido') {
+            filteredActiveTotal += stageTotals[stage];
+            filteredActiveCount += stageCounts[stage];
+            // Count "Prioridad Alta" as items in active stages with total >= 1,000,000
+            const stageItems = CRM.pipeline.filter(p => p.stage === stage);
+            stageItems.forEach(item => {
+                const card = document.querySelector(`.pipeline-item[data-item-id="${item.id}"]`);
+                if (card && card.style.display !== 'none') {
+                    if (item.total >= 1000000) {
+                        filteredPriorityCount++;
+                    }
+                }
+            });
+        }
+    });
+
+    const valEl = document.getElementById('pipelineStatValue');
+    if (valEl) valEl.textContent = formatPrecio(filteredActiveTotal);
+
+    const countEl = document.getElementById('pipelineStatCount');
+    if (countEl) countEl.textContent = filteredActiveCount;
+
+    const priorityEl = document.getElementById('pipelineStatPriority');
+    if (priorityEl) priorityEl.textContent = filteredPriorityCount;
+
+    const lostEl = document.getElementById('pipelineStatLost');
+    if (lostEl) lostEl.textContent = formatPrecio(filteredLostTotal);
+}
+
+function clearPipelineSearch() {
+    const input = document.getElementById('pipelineSearchInput');
+    if (input) {
+        input.value = '';
+        filterPipelineVisually();
+    }
 }
 
 // Drag and Drop handlers
@@ -1348,6 +1876,10 @@ function deleteTask(id) {
 // ============= CHARTS =============
 let salesChart, materialsChart, customersChart, reportSalesTrendChart, reportTasksChart, reportPipelineChart, reportTopCustomersChart, monthlySalesCalendarChart;
 
+// Calendar States
+let calendarCurrentDate = new Date();
+let calendarSelectedDate = new Date();
+
 function initializeCharts() {
     // Sales Chart
     const salesCtx = document.getElementById('salesChart');
@@ -1476,6 +2008,25 @@ function updateMonthlySalesCalendarChart() {
     }
 }
 
+function isSameCalendarDay(d1, d2) {
+    if (!d1 || !d2) return false;
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
+}
+
+function parseLocalDate(dateStr) {
+    if (!dateStr) return null;
+    if (dateStr.includes('T')) {
+        return new Date(dateStr);
+    }
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+    return new Date(dateStr);
+}
+
 function updateReports() {
     const approvedQuotes = CRM.quotations.filter(q => q.status === 'aprobada' || q.status === 'aprobado');
     const totalSales = approvedQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
@@ -1495,196 +2046,267 @@ function updateReports() {
     const elTasks = document.getElementById('reportPendingTasks');
     if(elTasks) elTasks.innerText = pendingTasks;
 
-    // Destroy existing charts to redraw
-    if (reportSalesTrendChart) reportSalesTrendChart.destroy();
-    if (reportTasksChart) reportTasksChart.destroy();
-    if (reportPipelineChart) reportPipelineChart.destroy();
-    if (reportTopCustomersChart) reportTopCustomersChart.destroy();
-    if (materialsChart) materialsChart.destroy();
+    // Render calendar
+    renderCalendar();
+    renderCalendarDetail();
 
-    // 1. Sales Trend Chart
-    const salesCtx = document.getElementById('reportSalesTrendChart');
-    if (salesCtx) {
-        const last6Months = Array.from({length: 6}, (_, i) => {
-            const d = new Date();
-            d.setMonth(d.getMonth() - (5 - i));
-            return d;
-        });
-        const monthNames = last6Months.map(d => d.toLocaleString('es-ES', { month: 'short' }));
+    // Render pipeline stages breakdown on reports page
+    loadPipeline();
+}
+
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const monthYearText = document.getElementById('calendarMonthYear');
+    if (!grid || !monthYearText) return;
+
+    const year = calendarCurrentDate.getFullYear();
+    const month = calendarCurrentDate.getMonth();
+
+    const monthNames = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    monthYearText.textContent = `${monthNames[month]} ${year}`;
+
+    grid.innerHTML = '';
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const prevTotalDays = new Date(year, month, 0).getDate();
+
+    // Fill previous month padding cells
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const dayNum = prevTotalDays - i;
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell calendar-cell-other';
+        cell.innerHTML = `<span class="calendar-cell-day-num">${dayNum}</span>`;
+        grid.appendChild(cell);
+    }
+
+    const today = new Date();
+    const approvedQuotes = CRM.quotations.filter(q => q.status === 'aprobada' || q.status === 'aprobado');
+
+    for (let day = 1; day <= totalDays; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell';
         
-        const monthlyData = last6Months.map(d => {
-            const m = d.getMonth();
-            const y = d.getFullYear();
-            return approvedQuotes.filter(q => {
-                const qd = new Date(q.fecha || Date.now());
-                return qd.getMonth() === m && qd.getFullYear() === y;
-            }).reduce((sum, q) => sum + (q.total || 0), 0);
-        });
-
-        reportSalesTrendChart = new Chart(salesCtx, {
-            type: 'line',
-            data: {
-                labels: monthNames,
-                datasets: [{
-                    label: 'Ventas Totales ($)',
-                    data: monthlyData,
-                    borderColor: 'rgba(255, 0, 102, 1)',
-                    backgroundColor: 'rgba(255, 0, 102, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-    }
-
-    // 2. Task Status Chart
-    const tasksCtx = document.getElementById('reportTasksChart');
-    if (tasksCtx) {
-        const p = CRM.tasks.filter(t => t.status === 'pending').length;
-        const ip = CRM.tasks.filter(t => t.status === 'in_progress').length;
-        const c = CRM.tasks.filter(t => t.status === 'completed').length;
-        reportTasksChart = new Chart(tasksCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Pendientes', 'En Progreso', 'Completadas'],
-                datasets: [{
-                    data: [p, ip, c],
-                    backgroundColor: [
-                        'rgba(255, 167, 38, 0.8)', 
-                        'rgba(96, 165, 250, 0.8)', 
-                        'rgba(52, 211, 153, 0.8)'
-                    ]
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-    }
-
-    // 3. Pipeline Value Chart
-    const pipelineCtx = document.getElementById('reportPipelineChart');
-    if (pipelineCtx) {
-        const stages = ['Cotizacion', 'Negociacion', 'Fabricacion', 'PendienteDePago', 'Terminado', 'Perdido'];
-        const stageNames = ['Cotización', 'Negociación', 'Fabricación', 'Pago Pend.', 'Terminado', 'Perdido'];
-        const stageValues = stages.map(st => {
-            return CRM.pipeline.filter(p => p.stage === st)
-                .reduce((sum, p) => sum + (p.value || 0), 0);
-        });
-
-        reportPipelineChart = new Chart(pipelineCtx, {
-            type: 'bar',
-            data: {
-                labels: stageNames,
-                datasets: [{
-                    label: 'Valor en Etapa ($)',
-                    data: stageValues,
-                    backgroundColor: 'rgba(79, 70, 229, 0.8)'
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
-    }
-
-    // 4. Top Customers Chart
-    const topCtx = document.getElementById('reportTopCustomersChart');
-    if (topCtx) {
-        const customerSales = {};
-        approvedQuotes.forEach(q => {
-            const customerName = q.cliente?.nombre || 'Desconocido';
-            customerSales[customerName] = (customerSales[customerName] || 0) + (q.total || 0);
-        });
-        let sortedCustomers = Object.entries(customerSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        const cellDate = new Date(year, month, day);
         
-        if (sortedCustomers.length === 0) {
-            sortedCustomers = [['Sin ventas', 0]];
+        if (isSameCalendarDay(cellDate, today)) {
+            cell.classList.add('calendar-cell-today');
+        }
+        
+        if (isSameCalendarDay(cellDate, calendarSelectedDate)) {
+            cell.classList.add('calendar-cell-selected');
         }
 
-        reportTopCustomersChart = new Chart(topCtx, {
-            type: 'bar',
-            data: {
-                labels: sortedCustomers.map(c => c[0]),
-                datasets: [{
-                    label: 'Ventas Totales ($)',
-                    data: sortedCustomers.map(c => c[1]),
-                    backgroundColor: 'rgba(52, 211, 153, 0.8)'
-                }]
-            },
-            options: { 
-                indexAxis: 'y', 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                }
+        let daySalesTotal = 0;
+        approvedQuotes.forEach(q => {
+            const qDate = q.fecha ? new Date(q.fecha) : null;
+            if (qDate && isSameCalendarDay(qDate, cellDate)) {
+                daySalesTotal += q.total || 0;
             }
         });
+
+        const dayTasks = CRM.tasks.filter(t => {
+            if (!t.dueDate) return false;
+            const tDate = parseLocalDate(t.dueDate);
+            return tDate && isSameCalendarDay(tDate, cellDate);
+        });
+
+        let html = `<span class="calendar-cell-day-num">${day}</span>`;
+        
+        if (daySalesTotal > 0) {
+            let compactSales = '';
+            if (daySalesTotal >= 1000000) {
+                compactSales = `+$${(daySalesTotal / 1000000).toFixed(1).replace('.0', '')}M`;
+            } else if (daySalesTotal >= 1000) {
+                compactSales = `+$${(daySalesTotal / 1000).toFixed(0)}K`;
+            } else {
+                compactSales = `+$${daySalesTotal}`;
+            }
+            html += `<span class="calendar-cell-badge" title="${formatPrecio(daySalesTotal)}">${compactSales}</span>`;
+        }
+
+        if (dayTasks.length > 0) {
+            html += `<div class="calendar-cell-dots">`;
+            dayTasks.forEach(() => {
+                html += `<span class="calendar-task-dot"></span>`;
+            });
+            html += `</div>`;
+        }
+
+        cell.innerHTML = html;
+        
+        cell.addEventListener('click', () => {
+            const prevSelected = grid.querySelector('.calendar-cell-selected');
+            if (prevSelected) {
+                prevSelected.classList.remove('calendar-cell-selected');
+            }
+            cell.classList.add('calendar-cell-selected');
+            
+            calendarSelectedDate = cellDate;
+            renderCalendarDetail();
+        });
+
+        grid.appendChild(cell);
     }
 
-    // 5. Materials Mix
-    const materialsCtx = document.getElementById('materialsChart');
-    if (materialsCtx) {
-        // Calculate based on products if possible, or use dummy for now if not tracked
-        // For now, let's try to infer from quotations if products have categories
-        const materialCounts = { 'Acrílico': 0, 'Aluminio': 0, 'Trovicel': 0, 'Otros': 0 };
-        
-        CRM.quotations.forEach(q => {
-            if (q.items) {
-                q.items.forEach(item => {
-                    const desc = (item.descripcion || '').toLowerCase();
-                    if (desc.includes('acrilico') || desc.includes('acrílico')) materialCounts['Acrílico']++;
-                    else if (desc.includes('aluminio')) materialCounts['Aluminio']++;
-                    else if (desc.includes('trovicel')) materialCounts['Trovicel']++;
-                    else materialCounts['Otros']++;
-                });
-            }
-        });
-
-        // Fallback to defaults if no data
-        const dataValues = Object.values(materialCounts);
-        const hasData = dataValues.some(v => v > 0);
-
-        materialsChart = new Chart(materialsCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(materialCounts),
-                datasets: [{
-                    data: hasData ? dataValues : [30, 35, 25, 10],
-                    backgroundColor: [
-                        'rgba(255, 0, 102, 0.8)',
-                        'rgba(96, 165, 250, 0.8)',
-                        'rgba(79, 70, 229, 0.8)',
-                        'rgba(52, 211, 153, 0.8)'
-                    ]
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
+    const currentCellsCount = firstDayIndex + totalDays;
+    const remainingCells = 42 - currentCellsCount;
+    for (let day = 1; day <= remainingCells; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell calendar-cell-other';
+        cell.innerHTML = `<span class="calendar-cell-day-num">${day}</span>`;
+        grid.appendChild(cell);
     }
 }
+
+function changeCalendarMonth(direction) {
+    calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + direction);
+    renderCalendar();
+}
+
+function setCalendarToToday() {
+    calendarCurrentDate = new Date();
+    calendarSelectedDate = new Date();
+    renderCalendar();
+    renderCalendarDetail();
+}
+
+function renderCalendarDetail() {
+    const detailDateText = document.getElementById('calendarDetailDate');
+    const detailContent = document.getElementById('calendarDetailContent');
+    if (!detailDateText || !detailContent) return;
+
+    const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const monthsShort = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    
+    const dayName = daysOfWeek[calendarSelectedDate.getDay()];
+    const dayNum = calendarSelectedDate.getDate();
+    const monthName = monthsShort[calendarSelectedDate.getMonth()];
+    const year = calendarSelectedDate.getFullYear();
+
+    detailDateText.textContent = `${dayName}, ${dayNum} ${monthName} ${year}`;
+    detailContent.innerHTML = '';
+
+    const approvedQuotes = CRM.quotations.filter(q => {
+        if (q.status !== 'aprobada' && q.status !== 'aprobado') return false;
+        const qDate = q.fecha ? new Date(q.fecha) : null;
+        return qDate && isSameCalendarDay(qDate, calendarSelectedDate);
+    });
+
+    const dayTasks = CRM.tasks.filter(t => {
+        if (!t.dueDate) return false;
+        const tDate = parseLocalDate(t.dueDate);
+        return tDate && isSameCalendarDay(tDate, calendarSelectedDate);
+    });
+
+    if (approvedQuotes.length === 0 && dayTasks.length === 0) {
+        detailContent.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 200px; text-align: center; color: var(--text-secondary); opacity: 0.6; gap: 0.75rem;">
+                <i class="far fa-calendar" style="font-size: 2.5rem; color: var(--text-secondary);"></i>
+                <p style="font-size: 0.9rem; margin: 0;">Sin actividades ni ventas registradas para este día.</p>
+            </div>
+        `;
+        return;
+    }
+
+    if (approvedQuotes.length > 0) {
+        const salesSection = document.createElement('div');
+        salesSection.style.display = 'flex';
+        salesSection.style.flexDirection = 'column';
+        salesSection.style.gap = '0.5rem';
+        
+        let salesHtml = `
+            <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--success); letter-spacing: 0.5px; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fas fa-handshake"></i> Ventas Aprobadas (${approvedQuotes.length})
+            </div>
+        `;
+
+        approvedQuotes.forEach(q => {
+            const clientName = q.cliente?.nombre || 'Sin cliente';
+            const projectInfo = q.items && q.items.length > 0 ? q.items.map(item => item.descripcion).join(', ') : 'Letrero Caperuso';
+            
+            salesHtml += `
+                <div style="background: rgba(67, 233, 123, 0.05); border: 1px solid rgba(67, 233, 123, 0.15); border-radius: 8px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(3px)'" onmouseout="this.style.transform='none'">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">Cotización #${q.numero}</span>
+                        <strong style="color: #43e97b; font-size: 0.9rem;">${formatPrecio(q.total || 0)}</strong>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
+                        <i class="fas fa-user" style="font-size: 0.7rem; color: var(--secondary);"></i> ${clientName}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${projectInfo}">
+                        <i class="fas fa-drafting-compass" style="font-size: 0.7rem;"></i> ${projectInfo}
+                    </div>
+                </div>
+            `;
+        });
+        
+        salesSection.innerHTML = salesHtml;
+        detailContent.appendChild(salesSection);
+    }
+
+    if (dayTasks.length > 0) {
+        if (approvedQuotes.length > 0) {
+            const divider = document.createElement('div');
+            divider.style.borderTop = '1px solid rgba(255,255,255,0.05)';
+            divider.style.margin = '0.5rem 0';
+            detailContent.appendChild(divider);
+        }
+
+        const tasksSection = document.createElement('div');
+        tasksSection.style.display = 'flex';
+        tasksSection.style.flexDirection = 'column';
+        tasksSection.style.gap = '0.5rem';
+
+        let tasksHtml = `
+            <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--warning); letter-spacing: 0.5px; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+                <i class="fas fa-tasks"></i> Tareas de Fabricación (${dayTasks.length})
+            </div>
+        `;
+
+        dayTasks.forEach(t => {
+            const priorityColors = {
+                'high': 'var(--danger)',
+                'medium': 'var(--warning)',
+                'low': 'var(--success)'
+            };
+            const priorityLabels = {
+                'high': 'Alta',
+                'medium': 'Media',
+                'low': 'Baja'
+            };
+            const priorityBadgeColor = priorityColors[t.priority] || 'var(--primary)';
+            const priorityLabel = priorityLabels[t.priority] || 'Normal';
+            const statusLabel = t.status === 'completed' ? 'Completada' : 'Pendiente';
+            const statusColor = t.status === 'completed' ? '#43e97b' : 'var(--warning)';
+
+            tasksHtml += `
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(3px)'" onmouseout="this.style.transform='none'">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+                        <span style="font-size: 0.85rem; font-weight: 500; color: #fff; line-height: 1.2;">${t.title || t.description}</span>
+                        <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); color: ${priorityBadgeColor}; border: 1px solid ${priorityBadgeColor}40; white-space: nowrap;">
+                            ${priorityLabel}
+                        </span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">
+                            <i class="far fa-check-circle" style="color: ${statusColor};"></i> ${statusLabel}
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+
+        tasksSection.innerHTML = tasksHtml;
+        detailContent.appendChild(tasksSection);
+    }
+}
+
+window.changeCalendarMonth = changeCalendarMonth;
+window.setCalendarToToday = setCalendarToToday;
 
 // ============= SETTINGS =============
 function loadSettings() {
@@ -2537,9 +3159,71 @@ function deleteSelectedCustomers() { alert("Borrando seleccionados..."); }
 function deleteAllCustomers() { if(confirm("¿Borrar todos?")) alert("Borrados"); }
 function toggleSelectAllCustomers() {}
 
-function deleteSelectedQuotations() {}
-function deleteAllQuotations() {}
-function toggleSelectAllQuotations() {}
+function exportCompanies() { alert("Exportando..."); }
+function importCompaniesFile() { alert("Importando..."); }
+function deleteSelectedCompanies() { alert("Borrando seleccionados..."); }
+function deleteAllCompanies() { if(confirm("¿Borrar todos?")) { CRM.companies = []; saveData(); loadCompaniesTable(); updateDashboard(); showNotification('✅ Todas las empresas eliminadas', 'success'); } }
+function toggleSelectAllCompanies() {}
+
+function deleteSelectedQuotations() {
+    const checkboxes = document.querySelectorAll('.quotation-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    
+    if (confirm(`¿Estás seguro de que deseas eliminar las ${checkboxes.length} cotizaciones seleccionadas?`)) {
+        const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
+        CRM.quotations = CRM.quotations.filter(q => !idsToDelete.includes(q.id));
+        
+        // Also remove from pipeline if they exist there
+        CRM.pipeline = CRM.pipeline.filter(p => !idsToDelete.includes(p.quotationId));
+        
+        saveData();
+        loadQuotationsTable();
+        updateDashboard();
+        
+        const mainCheckbox = document.getElementById('selectAllQuotations');
+        if (mainCheckbox) mainCheckbox.checked = false;
+        updateSelectedQuotationsCount();
+        
+        showNotification('✅ Cotizaciones seleccionadas eliminadas', 'success');
+    }
+}
+
+function deleteAllQuotations() {
+    if (confirm('¿Estás seguro de que deseas eliminar TODAS las cotizaciones? Esta acción no se puede deshacer.')) {
+        CRM.quotations = [];
+        CRM.pipeline = []; // Since all quotes are gone, empty pipeline too
+        saveData();
+        loadQuotationsTable();
+        updateDashboard();
+        
+        const mainCheckbox = document.getElementById('selectAllQuotations');
+        if (mainCheckbox) mainCheckbox.checked = false;
+        updateSelectedQuotationsCount();
+        
+        showNotification('✅ Todas las cotizaciones eliminadas', 'success');
+    }
+}
+
+function toggleSelectAllQuotations() {
+    const mainCheckbox = document.getElementById('selectAllQuotations');
+    const checkboxes = document.querySelectorAll('.quotation-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = mainCheckbox ? mainCheckbox.checked : false;
+    });
+    updateSelectedQuotationsCount();
+}
+
+function updateSelectedQuotationsCount() {
+    const checkboxes = document.querySelectorAll('.quotation-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteSelectedQuotationsBtn');
+    const countEl = document.getElementById('selectedQuotationsCount');
+    if (countEl) {
+        countEl.textContent = checkboxes.length;
+    }
+    if (deleteBtn) {
+        deleteBtn.style.display = checkboxes.length > 0 ? 'inline-block' : 'none';
+    }
+}
 
 function showAddImageModal() { openModal('addImageModal'); }
 
@@ -2619,7 +3303,230 @@ function regenerateEmailMessage() {}
 function copyEmailToClipboard() {}
 function openMailClient() {}
 function openEmailClient() {}
-function startPOSPrint() { alert("Impresión POS iniciada"); }
+function startPOSPrint() {
+    const modalBody = document.getElementById('quotationModalBody');
+    const id = modalBody ? modalBody.dataset.quotationId : null;
+    if (id) {
+        printPOSQuotation(id);
+    } else {
+        showNotification('❌ Error: No se pudo obtener la cotización', 'danger');
+    }
+}
+
+function printPOSQuotation(id) {
+    const quotation = CRM.quotations.find(q => q.id === id);
+    if (!quotation) {
+        showNotification('❌ Cotización no encontrada', 'danger');
+        return;
+    }
+
+    const content = generatePOSQuotationHTML(quotation);
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showNotification('❌ Error al abrir ventana de impresión. Verifique los permisos de ventanas emergentes.', 'danger');
+        return;
+    }
+    
+    printWindow.document.write(content);
+    printWindow.document.close();
+    
+    setTimeout(() => {
+        printWindow.print();
+    }, 500);
+}
+
+function generatePOSQuotationHTML(quotation) {
+    const client = quotation.cliente || {};
+    const ivaRate = 0.19;
+    
+    let baseTotal = quotation.total || 0;
+    
+    let costoEnvio = 0;
+    if (quotation.envio && quotation.envio.tipo === 'Monto Manual') {
+        costoEnvio = parseFloat(quotation.envio.costo) || 0;
+    }
+    
+    let costoInstalacion = 0;
+    if (quotation.instalacion && quotation.instalacion.tipo === 'Monto Manual') {
+        costoInstalacion = parseFloat(quotation.instalacion.costo) || 0;
+    }
+    
+    const subtotal = Math.round(baseTotal / (1 + ivaRate));
+    const ivaAmount = Math.round(baseTotal - subtotal);
+    const totalFinal = baseTotal + costoEnvio + costoInstalacion;
+
+    const itemsHtml = quotation.items.map((item, index) => {
+        const itemSubtotalNeto = Math.round(item.precio / (1 + ivaRate));
+        return `
+            <div class="pos-item">
+                <div style="font-weight: bold;">${index + 1}. ${item.nombre} x ${item.cantidad}</div>
+                <div style="font-size: 11px; color: #555; padding-left: 10px;">
+                    Dim: ${item.dimensiones}<br>
+                    Placa: ${item.detalles.placa.tipo.replace(/SIN PLACA|SIN/g, '-')}<br>
+                    Adh: ${item.detalles.adhesivo.tipo.replace(/SIN ADHESIVO|SIN/g, '-')}<br>
+                    Lam: ${item.detalles.laminado.tipo.replace(/SIN LAMINADO|SIN/g, '-')}
+                </div>
+                <div style="text-align: right; font-weight: bold; font-size: 11px; margin-top: 2px;">
+                    ${formatPrecio(Math.round(item.detalles.precioFinalPorUnidad / (1 + ivaRate)))} c/u | Total: ${formatPrecio(itemSubtotalNeto)} (Neto)
+                </div>
+            </div>
+            <div class="dashed-line"></div>
+        `;
+    }).join('');
+
+    return `
+        <html>
+        <head>
+            <title>Ticket POS N° ${quotation.numero}</title>
+            <meta charset="utf-8">
+            <style>
+                @page {
+                    size: 80mm auto;
+                    margin: 0;
+                }
+                body {
+                    font-family: 'Courier New', Courier, monospace;
+                    font-size: 12px;
+                    color: #000;
+                    background: #fff;
+                    margin: 0;
+                    padding: 4mm;
+                    width: 72mm;
+                    box-sizing: border-box;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .text-center {
+                    text-align: center;
+                }
+                .text-right {
+                    text-align: right;
+                }
+                .bold {
+                    font-weight: bold;
+                }
+                .title {
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin: 5px 0;
+                }
+                .subtitle {
+                    font-size: 10px;
+                    color: #333;
+                    margin: 2px 0;
+                }
+                .dashed-line {
+                    border-top: 1px dashed #000;
+                    margin: 8px 0;
+                }
+                .section-title {
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    font-size: 11px;
+                    margin-bottom: 4px;
+                }
+                .info-row {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 11px;
+                    margin-bottom: 2px;
+                }
+                .info-row span:first-child {
+                    font-weight: bold;
+                }
+                .pos-item {
+                    margin-bottom: 6px;
+                    page-break-inside: avoid;
+                }
+                .totals-box {
+                    font-size: 11px;
+                    margin-top: 10px;
+                }
+                .total-highlight {
+                    font-size: 14px;
+                    font-weight: bold;
+                    border-top: 1px dashed #000;
+                    border-bottom: 1px dashed #000;
+                    padding: 5px 0;
+                    margin-top: 5px;
+                }
+                .footer-text {
+                    font-size: 9px;
+                    text-align: center;
+                    margin-top: 15px;
+                    line-height: 1.4;
+                }
+                @media print {
+                    body {
+                        width: 72mm;
+                        padding: 0 2mm;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="text-center">
+                <img src="https://letreroscaperuso.cl/wp-content/uploads/2023/06/LOGO-LETREROSCAPERUSO-2023-04-scaled-e1774620911234.png" alt="Logo" style="height: 35px; width: auto; object-fit: contain;">
+                <div class="title">LETREROS CAPERUSO</div>
+                <div class="subtitle">Diseño Industrial EIRL</div>
+                <div class="subtitle">RUT: 76.491.931-9</div>
+                <div class="subtitle">Paine, Región Metropolitana</div>
+                <div class="subtitle">contacto@letreroscaperuso.cl | (+56) 9 8993 9871</div>
+            </div>
+
+            <div class="dashed-line"></div>
+
+            <div class="text-center bold" style="font-size: 13px;">
+                COTIZACIÓN N° ${quotation.numero}
+            </div>
+            <div class="text-center" style="font-size: 10px; margin-top: 3px;">
+                Fecha: ${formatDate(quotation.fecha)}
+            </div>
+
+            <div class="dashed-line"></div>
+
+            <div class="section-title">Datos del Cliente:</div>
+            <div class="info-row"><span>Nombre:</span> <span>${client.nombre || 'N/A'}</span></div>
+            <div class="info-row"><span>Empresa:</span> <span>${client.empresa || 'N/A'}</span></div>
+            <div class="info-row"><span>RUT:</span> <span>${client.rut || 'N/A'}</span></div>
+            <div class="info-row"><span>Fono:</span> <span>${client.telefono || 'N/A'}</span></div>
+
+            <div class="dashed-line"></div>
+
+            <div class="section-title">Detalle de Productos:</div>
+            <div class="dashed-line"></div>
+            ${itemsHtml}
+
+            <div class="totals-box">
+                <div class="info-row"><span>Subtotal Neto:</span> <span>${formatPrecio(subtotal)}</span></div>
+                <div class="info-row"><span>IVA (19%):</span> <span>${formatPrecio(ivaAmount)}</span></div>
+                <div class="info-row"><span>Despacho/Inst.:</span> <span>${formatPrecio(costoEnvio + costoInstalacion)}</span></div>
+                <div class="info-row total-highlight">
+                    <span>TOTAL:</span> <span>${formatPrecio(totalFinal)}</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px; font-size: 10px; line-height: 1.4;">
+                <div class="bold">Datos de Transferencia:</div>
+                BCI Cta Corriente: 79048986<br>
+                Eliseo Salazar Diseño Industrial EIRL<br>
+                RUT: 76.491.931-9<br>
+                Email: contacto@letreroscaperuso.cl
+            </div>
+
+            <div class="dashed-line"></div>
+
+            <div class="footer-text">
+                ¡Gracias por su preferencia!<br>
+                Conserve este ticket para su pedido.<br>
+                Plazo Fab: 3 días hábiles desde aprobación.<br>
+                www.letreroscaperuso.cl
+            </div>
+        </body>
+        </html>
+    `;
+}
 
 
 function showSuccessOverlay(message) {
