@@ -4563,6 +4563,23 @@
             box-shadow: 0 0 20px rgba(244, 63, 94, 0.65), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
         }
 
+        /* --- Quotations "Dar por Perdida" Button Styling --- */
+        #quotationsTableBody tr td button[onclick^="markQuotationAsLost"] {
+            background: rgba(251, 113, 133, 0.1) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(251, 113, 133, 0.3) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            border-radius: 8px !important;
+            padding: 0.5rem !important;
+        }
+
+        #quotationsTableBody tr td button[onclick^="markQuotationAsLost"]:hover {
+            background: var(--danger) !important;
+            color: #ffffff !important;
+            border-color: var(--danger) !important;
+            transform: scale(1.1) !important;
+        }
+
         /* Active click state for delete button */
         .btn-delete-item:active,
         main:nth-of-type(1) > section#library:nth-of-type(10) > div#libraryGrid:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1):active {
