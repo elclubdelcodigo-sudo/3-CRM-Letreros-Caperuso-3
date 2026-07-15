@@ -718,11 +718,11 @@ function loadQuotationsTable() {
         }
 
         const lostOrReactivateButton = q.status === 'rechazada' ? `
-            <button class="btn btn-sm" onclick="reactivateQuotation('${q.id}')" style="padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: white; border-radius: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Reactivar Cotización">
+            <button class="btn btn-sm btn-reactivate" onclick="reactivateQuotation('${q.id}')" style="padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: white; border-radius: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Reactivar Cotización">
                 <i class="fas fa-undo"></i>
             </button>
         ` : `
-            <button class="btn btn-sm" onclick="markQuotationAsLost('${q.id}')" style="padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--danger); color: white; border-radius: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Dar por Perdida">
+            <button class="btn btn-sm btn-mark-lost" onclick="markQuotationAsLost('${q.id}')" style="padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--danger); color: white; border-radius: 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Dar por Perdida">
                 <i class="fas fa-ban"></i>
             </button>
         `;
@@ -1351,7 +1351,11 @@ function markQuotationAsLost(id) {
         showNotification('❌ Cotización no encontrada', 'danger');
         return;
     }
-    if (confirm(`¿Estás seguro de que deseas marcar la cotización #${q.numero} como perdida?`)) {
+    
+    document.getElementById('markLostQuotationNumber').textContent = `#${q.numero}`;
+    document.getElementById('markLostModal').classList.add('active');
+    
+    document.getElementById('confirmMarkLostBtn').onclick = () => {
         q.previousStatus = q.status;
         q.status = 'rechazada';
         
@@ -1366,8 +1370,9 @@ function markQuotationAsLost(id) {
         loadQuotationsTable();
         loadPipeline();
         updateDashboard();
+        closeModal('markLostModal');
         showNotification(`📉 Cotización #${q.numero} marcada como perdida`, 'warning');
-    }
+    };
 }
 
 function reactivateQuotation(id) {
@@ -1376,7 +1381,11 @@ function reactivateQuotation(id) {
         showNotification('❌ Cotización no encontrada', 'danger');
         return;
     }
-    if (confirm(`¿Deseas reactivar la cotización #${q.numero}?`)) {
+    
+    document.getElementById('reactivateQuotationNumber').textContent = `#${q.numero}`;
+    document.getElementById('reactivateModal').classList.add('active');
+    
+    document.getElementById('confirmReactivateBtn').onclick = () => {
         q.status = q.previousStatus || 'borrador';
         delete q.previousStatus;
         
@@ -1391,8 +1400,9 @@ function reactivateQuotation(id) {
         loadQuotationsTable();
         loadPipeline();
         updateDashboard();
+        closeModal('reactivateModal');
         showNotification(`🔄 Cotización #${q.numero} reactivada`, 'success');
-    }
+    };
 }
 
 function loadPipeline() {
@@ -2036,6 +2046,21 @@ function updateReports() {
 
     const formatMoney = (val) => '$' + val.toLocaleString('es-CL');
     
+    // Calculate new KPIs
+    const wonTotal = totalSales;
+    const lostTotal = CRM.quotations.filter(q => q.status === 'rechazada' || q.status === 'rechazado').reduce((sum, q) => sum + (q.total || 0), 0);
+    const wonUtility = approvedQuotes.reduce((sum, q) => {
+        const qUtility = q.items ? q.items.reduce((itemSum, item) => {
+            const utilPerUnit = item.detalles && typeof item.detalles.utilidadPorUnidad === 'number' 
+                ? item.detalles.utilidadPorUnidad 
+                : 0;
+            const qty = typeof item.cantidad === 'number' ? item.cantidad : 1;
+            return itemSum + (utilPerUnit * qty);
+        }, 0) : 0;
+        return sum + qUtility;
+    }, 0);
+    const pendingTotal = CRM.quotations.filter(q => q.status !== 'aprobada' && q.status !== 'aprobado' && q.status !== 'rechazada' && q.status !== 'rechazado').reduce((sum, q) => sum + (q.total || 0), 0);
+
     // Update numeric cards
     const elSales = document.getElementById('reportTotalSales');
     if(elSales) elSales.innerText = formatMoney(totalSales);
@@ -2045,6 +2070,16 @@ function updateReports() {
     if(elTicket) elTicket.innerText = formatMoney(avgTicket);
     const elTasks = document.getElementById('reportPendingTasks');
     if(elTasks) elTasks.innerText = pendingTasks;
+
+    // Update new KPI cards
+    const elWon = document.getElementById('reportKpiWonValue');
+    if(elWon) elWon.innerText = formatMoney(wonTotal);
+    const elLost = document.getElementById('reportKpiLostValue');
+    if(elLost) elLost.innerText = formatMoney(lostTotal);
+    const elProfit = document.getElementById('reportKpiProfitValue');
+    if(elProfit) elProfit.innerText = formatMoney(wonUtility);
+    const elPending = document.getElementById('reportKpiPendingValue');
+    if(elPending) elPending.innerText = formatMoney(pendingTotal);
 
     // Render calendar
     renderCalendar();
@@ -3221,7 +3256,7 @@ function updateSelectedQuotationsCount() {
         countEl.textContent = checkboxes.length;
     }
     if (deleteBtn) {
-        deleteBtn.style.display = checkboxes.length > 0 ? 'inline-block' : 'none';
+        deleteBtn.style.display = checkboxes.length > 0 ? 'inline-flex' : 'none';
     }
 }
 

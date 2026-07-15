@@ -3540,6 +3540,53 @@
                 </div>
             </div>
 
+            <!-- Quotation specific KPIs -->
+            <div class="grid grid-4" style="margin-bottom: 2rem; gap: 1rem;">
+                <!-- KPI 1: Ganadas -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total Valor en Cotizaciones Ganadas</div>
+                        <div id="reportKpiWonValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--success); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Perdidas -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--danger); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total en Cotizaciones Perdidas</div>
+                        <div id="reportKpiLostValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--danger); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(251, 113, 133, 0.3);">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Utilidad -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--secondary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total en Utilidad en Cotizaciones Ganadas</div>
+                        <div id="reportKpiProfitValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--secondary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Por Ganar -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total en Cotizaciones por Ganar</div>
+                        <div id="reportKpiPendingValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                </div>
+            </div>
+
             <!-- Calendar Grid Layer -->
             <div style="margin-bottom: 2rem;">
                 <div class="card" style="padding: 1.5rem; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; backdrop-filter: blur(8px);">
@@ -4157,7 +4204,44 @@
 
         
 
-        <!-- AI Message Center Modal -->
+        <!-- Mark Quotation Lost Modal -->
+        <div id="markLostModal" class="modal">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 style="font-family: 'Syne', sans-serif;">Marcar Cotización como Perdida</h3>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--danger);">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <p style="margin-bottom: 1.5rem;">¿Estás seguro de que deseas marcar la cotización <strong id="markLostQuotationNumber"></strong> como perdida?</p>
+                    <div class="form-actions" style="justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('markLostModal')">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmMarkLostBtn">Dar por Perdida</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reactivate Quotation Modal -->
+        <div id="reactivateModal" class="modal">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 style="font-family: 'Syne', sans-serif;">Reactivar Cotización</h3>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem; color: #3b82f6;">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <p style="margin-bottom: 1.5rem;">¿Deseas reactivar la cotización <strong id="reactivateQuotationNumber"></strong>?</p>
+                    <div class="form-actions" style="justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('reactivateModal')">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="confirmReactivateBtn">Reactivar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- PWA Install Modal -->
         <div id="pwaInstallModal" class="modal">
             <div class="modal-content" style="max-width: 400px; text-align: center; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1);">
@@ -4484,52 +4568,139 @@
         
         /* Selector 1: Button to delete selected quotations */
         main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button#deleteSelectedQuotationsBtn:nth-of-type(2) {
-            background: rgba(251, 113, 133, 0.12) !important;
-            border: 1px solid rgba(251, 113, 133, 0.3) !important;
+            background: rgba(251, 113, 133, 0.1) !important;
+            border: 1px solid rgba(251, 113, 133, 0.2) !important;
             color: #fb7185 !important;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
-            border-radius: 12px !important;
-            padding: 0.75rem 1.5rem !important;
-            font-weight: 600 !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 0.6rem 1.2rem !important;
+            font-weight: 500 !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
         }
 
         main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button#deleteSelectedQuotationsBtn:nth-of-type(2):hover {
             background: #fb7185 !important;
             border-color: #fb7185 !important;
             color: #ffffff !important;
-            transform: translateY(-2px) scale(1.03) !important;
-            box-shadow: 0 0 20px rgba(251, 113, 133, 0.5), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 15px rgba(251, 113, 133, 0.3) !important;
         }
 
         main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button#deleteSelectedQuotationsBtn:nth-of-type(2):active {
-            transform: translateY(0) scale(0.97) !important;
-            box-shadow: 0 0 8px rgba(251, 113, 133, 0.3) !important;
+            transform: translateY(0) !important;
+            box-shadow: none !important;
         }
 
         /* Selector 2: Button to delete all quotations */
         main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3) {
-            background: rgba(251, 113, 133, 0.04) !important;
-            color: rgba(255, 255, 255, 0.8) !important;
-            border: 1px dashed rgba(251, 113, 133, 0.2) !important;
+            background: rgba(251, 113, 133, 0.05) !important;
+            color: #fb7185 !important;
+            border: 1px dashed rgba(251, 113, 133, 0.3) !important;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
             box-shadow: none !important;
-            border-radius: 12px !important;
-            padding: 0.75rem 1.5rem !important;
-            font-weight: 600 !important;
+            border-radius: 8px !important;
+            padding: 0.6rem 1.2rem !important;
+            font-weight: 500 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
         }
 
         main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3):hover {
-            background: rgba(251, 113, 133, 0.15) !important;
-            color: #fb7185 !important;
+            background: rgba(251, 113, 133, 0.1) !important;
             border-color: #fb7185 !important;
-            transform: translateY(-2px) scale(1.03) !important;
-            box-shadow: 0 4px 12px rgba(251, 113, 133, 0.1) !important;
+            transform: translateY(-2px) !important;
         }
 
         main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3):active {
-            transform: translateY(0) scale(0.97) !important;
-            box-shadow: 0 0 8px rgba(251, 113, 133, 0.2) !important;
+            transform: translateY(0) !important;
+        }
+
+        /* Quotation Checkboxes */
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(1) input[type="checkbox"],
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > thead:nth-of-type(1) > tr:nth-of-type(1) > th:nth-of-type(1) input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            accent-color: var(--primary);
+        }
+
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(1) input[type="checkbox"]:hover,
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > thead:nth-of-type(1) > tr:nth-of-type(1) > th:nth-of-type(1) input[type="checkbox"]:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(239, 35, 107, 0.15);
+        }
+
+        /* --- Quotation Status Action Cell & Buttons (Focus Mode Refinement) --- */
+        
+        /* The container cell for all action buttons */
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(8) {
+            display: flex !important;
+            gap: 0.5rem !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            flex-wrap: nowrap !important;
+            padding: 0.75rem !important;
+        }
+
+        /* 1. Base style for 'mark as lost' button (btn-mark-lost or generic 4th/5th child button) */
+        .btn-mark-lost,
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(8) > button.btn-mark-lost,
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(8) > button:nth-of-type(4),
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(8) > button:nth-of-type(5) {
+            background: rgba(251, 113, 133, 0.1) !important;
+            border: 1px solid rgba(251, 113, 133, 0.2) !important;
+            color: #fb7185 !important;
+            border-radius: 10px !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            width: 36px !important;
+            height: 36px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+        }
+
+        /* 2. Hover state for 'mark as lost' button */
+        .btn-mark-lost:hover,
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(8) > button.btn-mark-lost:hover,
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(8) > button:nth-of-type(4):hover,
+        main:nth-of-type(1) > section#quotations:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(1) > table:nth-of-type(1) > tbody#quotationsTableBody:nth-of-type(1) > tr > td:nth-of-type(8) > button:nth-of-type(5):hover {
+            background: #fb7185 !important;
+            color: white !important;
+            border-color: #fb7185 !important;
+            transform: translateY(-3px) scale(1.1) !important;
+            box-shadow: 0 6px 15px rgba(251, 113, 133, 0.4) !important;
+        }
+
+        /* 3. Base style for 'reactivate' button */
+        .btn-reactivate {
+            background: rgba(59, 130, 246, 0.1) !important;
+            border: 1px solid rgba(59, 130, 246, 0.2) !important;
+            color: #3b82f6 !important;
+            border-radius: 10px !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            width: 36px !important;
+            height: 36px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+        }
+
+        /* 4. Hover state for 'reactivate' button */
+        .btn-reactivate:hover {
+            background: #3b82f6 !important;
+            color: white !important;
+            border-color: #3b82f6 !important;
+            transform: translateY(-3px) scale(1.1) !important;
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4) !important;
         }
 
         /* --- Library Delete Button, Cards, and Images Styles (Focus Mode Session) --- */
@@ -4561,23 +4732,6 @@
             color: #ffffff !important;
             transform: scale(1.18) !important;
             box-shadow: 0 0 20px rgba(244, 63, 94, 0.65), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-        }
-
-        /* --- Quotations "Dar por Perdida" Button Styling --- */
-        #quotationsTableBody tr td button[onclick^="markQuotationAsLost"] {
-            background: rgba(251, 113, 133, 0.1) !important;
-            color: var(--danger) !important;
-            border: 1px solid rgba(251, 113, 133, 0.3) !important;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-            border-radius: 8px !important;
-            padding: 0.5rem !important;
-        }
-
-        #quotationsTableBody tr td button[onclick^="markQuotationAsLost"]:hover {
-            background: var(--danger) !important;
-            color: #ffffff !important;
-            border-color: var(--danger) !important;
-            transform: scale(1.1) !important;
         }
 
         /* Active click state for delete button */

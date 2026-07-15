@@ -1,0 +1,55 @@
+--- index.html
++++ index.html
+@@ -3540,6 +3540,51 @@
+                 </div>
+             </div>
+ 
++            <!-- Quotation specific KPIs -->
++            <div class="grid grid-4" style="margin-bottom: 2rem; gap: 1rem;">
++                <!-- KPI 1: Ganadas -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total Valor en Cotizaciones Ganadas</div>
++                        <div id="reportKpiWonValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--success); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
++                        <i class="fas fa-check-double"></i>
++                    </div>
++                </div>
++
++                <!-- KPI 2: Perdidas -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--danger); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total en Cotizaciones Perdidas</div>
++                        <div id="reportKpiLostValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--danger); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(251, 113, 133, 0.3);">
++                        <i class="fas fa-times-circle"></i>
++                    </div>
++                </div>
++
++                <!-- KPI 3: Utilidad -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--secondary); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total en Utilidad en Cotizaciones Ganadas</div>
++                        <div id="reportKpiProfitValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--secondary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);">
++                        <i class="fas fa-chart-line"></i>
++                    </div>
++                </div>
++
++                <!-- KPI 4: Por Ganar -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total en Cotizaciones por Ganar</div>
++                        <div id="reportKpiPendingValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
++                        <i class="fas fa-hourglass-half"></i>
++                    </div>
++                </div>
++            </div>
++
+             <!-- Calendar Grid Layer -->
+             <div style="margin-bottom: 2rem;">
