@@ -1,0 +1,56 @@
+--- index.html
++++ index.html
+@@ -3134,6 +3134,51 @@
+                 </div>
+             </div>
+ 
++            <!-- Customer specific KPIs -->
++            <div class="grid grid-4" style="margin-bottom: 2rem; gap: 1rem;">
++                <!-- KPI 1: Total Customers -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Total de Clientes</div>
++                        <div id="customerKpiTotalValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
++                        <i class="fas fa-users"></i>
++                    </div>
++                </div>
++
++                <!-- KPI 2: New Customers this Month -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Nuevos este Mes</div>
++                        <div id="customerKpiNewValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--success); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
++                        <i class="fas fa-user-plus"></i>
++                    </div>
++                </div>
++
++                <!-- KPI 3: Average Client Value -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--secondary); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Valor Promedio Cliente</div>
++                        <div id="customerKpiAvgValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--secondary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);">
++                        <i class="fas fa-hand-holding-usd"></i>
++                    </div>
++                </div>
++
++                <!-- KPI 4: Number of Quotes and Purchases (Avg) -->
++                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;">
++                    <div>
++                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Cotizaciones / Compras</div>
++                        <div id="customerKpiActivityValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0 / 0</div>
++                    </div>
++                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
++                        <i class="fas fa-chart-pie"></i>
++                    </div>
++                </div>
++            </div>
++
+             <div class="card">
+                 <div class="table-container">
+                     <table class="table">

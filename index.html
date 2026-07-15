@@ -3075,6 +3075,53 @@
                 </div>
             </div>
 
+            <!-- Company specific KPIs -->
+            <div class="grid grid-4" style="margin-bottom: 2rem; gap: 1rem;">
+                <!-- KPI 1: Total Companies -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Número total de Empresas</div>
+                        <div id="companyKpiTotalValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-building"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 2: New Companies this Month -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Empresas nuevas este Mes</div>
+                        <div id="companyKpiNewValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--success); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Average Company Value -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--secondary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Valor Promedio Empresas</div>
+                        <div id="companyKpiAvgValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--secondary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Number of Quotes and Purchases -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Cotizaciones y Compras</div>
+                        <div id="companyKpiActivityValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0 / 0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="table-container">
                     <table class="table">
@@ -3134,7 +3181,61 @@
                 </div>
             </div>
 
+            <!-- Customer specific KPIs -->
+            <div class="grid grid-4" style="margin-bottom: 2rem; gap: 1rem;">
+                <!-- KPI 1: Total Customers -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Número total de Clientes</div>
+                        <div id="customerKpiTotalValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 2: New Customers this Month -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Clientes nuevos este Mes</div>
+                        <div id="customerKpiNewValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--success); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Average Client Value -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--secondary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Valor Promedio Clientes</div>
+                        <div id="customerKpiAvgValue" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--secondary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Number of Quotes and Purchases -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Cotizaciones y Compras</div>
+                        <div id="customerKpiActivityValue" style="font-size: 1.75rem; font-weight: 800; color: white;">0 / 0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
+                <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center;">
+                    <h3 style="font-family: 'Syne', sans-serif; font-size: 1.25rem; margin: 0;">Directorio de Clientes</h3>
+                    <div class="search-box" style="position: relative; width: 100%; max-width: 400px;">
+                        <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
+                        <input type="text" id="customerSearchInput" class="form-control" placeholder="Buscar por nombre, empresa o rut..." style="padding-left: 2.5rem; margin-bottom: 0;" oninput="searchCustomers()">
+                    </div>
+                </div>
                 <div class="table-container">
                     <table class="table">
                         <thead>
@@ -3536,6 +3637,94 @@
                     <div id="reportPendingTasks" style="font-size: 1.75rem; font-weight: 800; color: var(--warning);">0
                     </div>
                     <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem;">Por completar
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company specific KPIs -->
+            <div class="grid grid-4" style="margin-bottom: 2rem; gap: 1rem;">
+                <!-- KPI 1: Total Companies -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Número total de Empresas</div>
+                        <div id="reportKpiTotalCompanies" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-building"></i>
+                    </div>
+                </div>
+                <!-- KPI 2: New Companies -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Empresas nuevas este Mes</div>
+                        <div id="reportKpiNewCompanies" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--success); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                </div>
+                <!-- KPI 3: Avg Value Companies -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Valor Promedio Empresas</div>
+                        <div id="reportKpiAvgCompanies" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                </div>
+                <!-- KPI 4: Quotes and Purchases -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Cotizaciones y Compras</div>
+                        <div id="reportKpiQuotesCompanies" style="font-size: 1.75rem; font-weight: 800; color: white;">0 / 0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer specific KPIs -->
+            <div class="grid grid-4" style="margin-bottom: 2rem; gap: 1rem;">
+                <!-- KPI 1: Total Customers -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Número total de Clientes</div>
+                        <div id="reportKpiTotalCustomers" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <!-- KPI 2: New Customers -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Clientes nuevos este Mes</div>
+                        <div id="reportKpiNewCustomers" style="font-size: 1.75rem; font-weight: 800; color: white;">0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--success); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+                <!-- KPI 3: Avg Value Customers -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Valor Promedio Clientes</div>
+                        <div id="reportKpiAvgCustomers" style="font-size: 1.75rem; font-weight: 800; color: white;">$0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                </div>
+                <!-- KPI 4: Quotes and Purchases -->
+                <div class="card" style="padding: 1.5rem; background: var(--bg-card); border-top: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Cotizaciones y Compras</div>
+                        <div id="reportKpiQuotesCustomers" style="font-size: 1.75rem; font-weight: 800; color: white;">0 / 0</div>
+                    </div>
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(239, 35, 107, 0.3);">
+                        <i class="fas fa-chart-pie"></i>
                     </div>
                 </div>
             </div>
@@ -4242,6 +4431,109 @@
             </div>
         </div>
 
+        <!-- Import Customers Modal -->
+        <div id="importCustomersModal" class="modal">
+            <div class="modal-content" style="max-width: 450px; text-align: center;">
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 style="font-family: 'Syne', sans-serif;">Importar Clientes</h3>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary);">
+                        <i class="fas fa-file-import"></i>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Sube un archivo Excel (.xls o .xlsx) para importar clientes.</p>
+                    <button class="btn btn-outline" style="margin-bottom: 1.5rem;" onclick="downloadCustomersTemplate()">
+                        <i class="fas fa-download"></i> Descargar Plantilla
+                    </button>
+                    <input type="file" id="importCustomersInput" accept=".xls,.xlsx" style="display: none;" onchange="handleCustomersImport(event)">
+                    <div class="form-actions" style="justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('importCustomersModal')">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('importCustomersInput').click()">Seleccionar Archivo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Companies Modal -->
+        <div id="importCompaniesModal" class="modal">
+            <div class="modal-content" style="max-width: 450px; text-align: center;">
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 style="font-family: 'Syne', sans-serif;">Importar Empresas</h3>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary);">
+                        <i class="fas fa-file-import"></i>
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Sube un archivo Excel (.xls o .xlsx) para importar empresas.</p>
+                    <button class="btn btn-outline" style="margin-bottom: 1.5rem;" onclick="downloadCompaniesTemplate()">
+                        <i class="fas fa-download"></i> Descargar Plantilla
+                    </button>
+                    <input type="file" id="importCompaniesInput" accept=".xls,.xlsx" style="display: none;" onchange="handleCompaniesImport(event)">
+                    <div class="form-actions" style="justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('importCompaniesModal')">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('importCompaniesInput').click()">Seleccionar Archivo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Quotations Modal -->
+        <div id="deleteQuotationsModal" class="modal">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 style="font-family: 'Syne', sans-serif;">Eliminar Cotizaciones</h3>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--danger);">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <p style="margin-bottom: 1.5rem;" id="deleteQuotationsMessage"></p>
+                    <div class="form-actions" style="justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('deleteQuotationsModal')">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteQuotationsBtn">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Customers Modal -->
+        <div id="deleteCustomersModal" class="modal">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 style="font-family: 'Syne', sans-serif;">Eliminar Clientes</h3>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--danger);">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <p style="margin-bottom: 1.5rem;" id="deleteCustomersMessage"></p>
+                    <div class="form-actions" style="justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('deleteCustomersModal')">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteCustomersBtn">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Companies Modal -->
+        <div id="deleteCompaniesModal" class="modal">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 style="font-family: 'Syne', sans-serif;">Eliminar Empresas</h3>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--danger);">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <p style="margin-bottom: 1.5rem;" id="deleteCompaniesMessage"></p>
+                    <div class="form-actions" style="justify-content: center; gap: 1rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('deleteCompaniesModal')">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteCompaniesBtn">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- PWA Install Modal -->
         <div id="pwaInstallModal" class="modal">
             <div class="modal-content" style="max-width: 400px; text-align: center; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1);">
@@ -4495,6 +4787,7 @@
         <!-- Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <!-- Security Utils -->
         <!-- <script src="src/utils/sanitizer.js"></script> -->
         <script src="app.js?v=1.0.2"></script>

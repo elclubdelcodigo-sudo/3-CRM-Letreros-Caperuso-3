@@ -464,27 +464,59 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+function searchCustomers() {
+    loadCustomersTable();
+}
+
 function loadCustomersTable() {
+    updateCustomerKPIs();
     const tbody = document.getElementById('customersTableBody');
 
     if (CRM.customers.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7">
-                    <div class="empty-state">
-                        <i class="fas fa-users"></i>
-                        <h3>No hay clientes registrados</h3>
-                        <p>Comienza agregando tu primer cliente</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <h3>No hay clientes registrados</h3>
+                            <p>Comienza agregando tu primer cliente</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
         return;
     }
 
-    tbody.innerHTML = CRM.customers.map(c => `
+    const searchInput = document.getElementById('customerSearchInput');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    
+    let filteredCustomers = CRM.customers;
+    if (searchTerm) {
+        filteredCustomers = CRM.customers.filter(c => {
+            const searchString = `${c.nombre || ''} ${c.empresa || ''} ${c.rut || ''} ${c.correo || ''}`.toLowerCase();
+            return searchString.includes(searchTerm);
+        });
+    }
+
+    if (tbody) {
+        if (filteredCustomers.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state" style="padding: 2rem;">
+                            <i class="fas fa-search" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                            <h3 style="color: var(--text-secondary);">No se encontraron resultados</h3>
+                            <p>Intenta con otros términos de búsqueda</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        } else {
+            tbody.innerHTML = filteredCustomers.map(c => `
         <tr>
-            <td><input type="checkbox" class="customer-checkbox" value="${c.id}"></td>
+            <td><input type="checkbox" class="customer-checkbox" value="${c.id}" onchange="updateSelectedCustomersCount()"></td>
             <td>
                 <div class="customer-profile">
                     <div class="customer-avatar">${getInitials(c.nombre)}</div>
@@ -512,6 +544,81 @@ function loadCustomersTable() {
             </td>
         </tr>
     `).join('');
+        }
+    }
+}
+
+function updateCustomerKPIs() {
+    const totalCustomers = CRM.customers.length;
+    
+    // New customers this month
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const newCustomers = CRM.customers.filter(c => {
+        if (!c.createdAt) return false;
+        const d = new Date(c.createdAt);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    }).length;
+    
+    // Match customer stats by name or email
+    let totalSales = 0;
+    let totalQuotes = 0;
+    let totalPurchases = 0;
+
+    CRM.customers.forEach(customer => {
+        let customerSales = 0;
+        let customerQuotesCount = 0;
+        let customerPurchasesCount = 0;
+
+        CRM.quotations.forEach(q => {
+            const matchesName = q.cliente && q.cliente.nombre && q.cliente.nombre.toLowerCase() === customer.nombre.toLowerCase();
+            const matchesEmail = q.cliente && q.cliente.email && customer.correo && q.cliente.email.toLowerCase() === customer.correo.toLowerCase();
+            
+            if (matchesName || matchesEmail) {
+                customerQuotesCount++;
+                if (q.status === 'aprobada' || q.status === 'aprobado') {
+                    customerPurchasesCount++;
+                    customerSales += (q.total || 0);
+                }
+            }
+        });
+
+        // Optionally update the customer object as well for the table
+        customer.totalSales = customerSales;
+        customer.quotationsCount = customerQuotesCount;
+
+        totalSales += customerSales;
+        totalQuotes += customerQuotesCount;
+        totalPurchases += customerPurchasesCount;
+    });
+
+    const avgClientValue = totalCustomers > 0 ? Math.round(totalSales / totalCustomers) : 0;
+    
+    const elTotal = document.getElementById('customerKpiTotalValue');
+    if (elTotal) elTotal.innerText = totalCustomers;
+    
+    const elNew = document.getElementById('customerKpiNewValue');
+    if (elNew) elNew.innerText = newCustomers;
+    
+    const formatMoney = (val) => '$' + val.toLocaleString('es-CL');
+    const elAvg = document.getElementById('customerKpiAvgValue');
+    if (elAvg) elAvg.innerText = formatMoney(avgClientValue);
+    
+    const elActivity = document.getElementById('customerKpiActivityValue');
+    if (elActivity) elActivity.innerText = `${totalQuotes} / ${totalPurchases}`;
+
+    // Update Report KPIs as well
+    const reportTotalCustomers = document.getElementById('reportKpiTotalCustomers');
+    if (reportTotalCustomers) reportTotalCustomers.innerText = totalCustomers;
+    
+    const reportNewCustomers = document.getElementById('reportKpiNewCustomers');
+    if (reportNewCustomers) reportNewCustomers.innerText = newCustomers;
+    
+    const reportAvgCustomers = document.getElementById('reportKpiAvgCustomers');
+    if (reportAvgCustomers) reportAvgCustomers.innerText = formatMoney(avgClientValue);
+    
+    const reportQuotesCustomers = document.getElementById('reportKpiQuotesCustomers');
+    if (reportQuotesCustomers) reportQuotesCustomers.innerText = `${totalQuotes} / ${totalPurchases}`;
 }
 
 function editCustomer(id) {
@@ -536,6 +643,7 @@ function showNewCompanyModal() {
 }
 
 function loadCompaniesTable() {
+    updateCompanyKPIs();
     const tbody = document.getElementById('companiesTableBody');
     if (!tbody) return;
 
@@ -556,7 +664,7 @@ function loadCompaniesTable() {
 
     tbody.innerHTML = CRM.companies.map(c => `
         <tr>
-            <td><input type="checkbox" class="company-checkbox" value="${c.id}"></td>
+            <td><input type="checkbox" class="company-checkbox" value="${c.id}" onchange="updateSelectedCompaniesCount()"></td>
             <td>
                 <div class="customer-profile">
                     <div class="customer-avatar">${getInitials(c.nombre)}</div>
@@ -584,6 +692,77 @@ function loadCompaniesTable() {
             </td>
         </tr>
     `).join('');
+}
+
+function updateCompanyKPIs() {
+    const totalCompanies = CRM.companies.length;
+    
+    // New companies this month
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const newCompanies = CRM.companies.filter(c => {
+        if (!c.createdAt) return false;
+        const d = new Date(c.createdAt);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    }).length;
+    
+    // Match company stats by name
+    let totalSales = 0;
+    let totalQuotes = 0;
+    let totalPurchases = 0;
+
+    CRM.companies.forEach(company => {
+        let companySales = 0;
+        let companyQuotesCount = 0;
+        let companyPurchasesCount = 0;
+
+        CRM.quotations.forEach(q => {
+            const matchesCompany = q.cliente && q.cliente.empresa && q.cliente.empresa.toLowerCase() === company.nombre.toLowerCase();
+            
+            if (matchesCompany) {
+                companyQuotesCount++;
+                if (q.status === 'aprobada' || q.status === 'aprobado') {
+                    companyPurchasesCount++;
+                    companySales += (q.total || 0);
+                }
+            }
+        });
+
+        company.totalSales = companySales;
+        company.quotationsCount = companyQuotesCount;
+
+        totalSales += companySales;
+        totalQuotes += companyQuotesCount;
+        totalPurchases += companyPurchasesCount;
+    });
+
+    const avgCompanyValue = totalCompanies > 0 ? Math.round(totalSales / totalCompanies) : 0;
+    
+    const elTotal = document.getElementById('companyKpiTotalValue');
+    if (elTotal) elTotal.innerText = totalCompanies;
+    
+    const elNew = document.getElementById('companyKpiNewValue');
+    if (elNew) elNew.innerText = newCompanies;
+    
+    const formatMoney = (val) => '$' + val.toLocaleString('es-CL');
+    const elAvg = document.getElementById('companyKpiAvgValue');
+    if (elAvg) elAvg.innerText = formatMoney(avgCompanyValue);
+    
+    const elActivity = document.getElementById('companyKpiActivityValue');
+    if (elActivity) elActivity.innerText = `${totalQuotes} / ${totalPurchases}`;
+
+    // Update Report KPIs as well
+    const reportTotalCompanies = document.getElementById('reportKpiTotalCompanies');
+    if (reportTotalCompanies) reportTotalCompanies.innerText = totalCompanies;
+    
+    const reportNewCompanies = document.getElementById('reportKpiNewCompanies');
+    if (reportNewCompanies) reportNewCompanies.innerText = newCompanies;
+    
+    const reportAvgCompanies = document.getElementById('reportKpiAvgCompanies');
+    if (reportAvgCompanies) reportAvgCompanies.innerText = formatMoney(avgCompanyValue);
+    
+    const reportQuotesCompanies = document.getElementById('reportKpiQuotesCompanies');
+    if (reportQuotesCompanies) reportQuotesCompanies.innerText = `${totalQuotes} / ${totalPurchases}`;
 }
 
 function editCompany(id) {
@@ -2087,6 +2266,10 @@ function updateReports() {
 
     // Render pipeline stages breakdown on reports page
     loadPipeline();
+    
+    // Update company and customer KPIs
+    updateCompanyKPIs();
+    updateCustomerKPIs();
 }
 
 function renderCalendar() {
@@ -3188,23 +3371,366 @@ function resetBrainIA() {
     }
 }
 
-function exportCustomers() { alert("Exportando..."); }
-function importCustomersFile() { alert("Importando..."); }
-function deleteSelectedCustomers() { alert("Borrando seleccionados..."); }
-function deleteAllCustomers() { if(confirm("¿Borrar todos?")) alert("Borrados"); }
-function toggleSelectAllCustomers() {}
+function exportCustomers() {
+    if (CRM.customers.length === 0) {
+        showNotification('No hay clientes para exportar', 'warning');
+        return;
+    }
+    
+    // Prepare data for Excel
+    const data = CRM.customers.map(c => ({
+        'Nombre': c.nombre || '',
+        'Empresa': c.empresa || '',
+        'RUT': c.rut || '',
+        'Teléfono': c.telefono || '',
+        'Correo': c.correo || '',
+        'Dirección': c.direccion || '',
+        'Giro': c.giro || ''
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+    
+    XLSX.writeFile(wb, "Clientes.xlsx");
+    showNotification('✅ Clientes exportados exitosamente', 'success');
+}
 
-function exportCompanies() { alert("Exportando..."); }
-function importCompaniesFile() { alert("Importando..."); }
-function deleteSelectedCompanies() { alert("Borrando seleccionados..."); }
-function deleteAllCompanies() { if(confirm("¿Borrar todos?")) { CRM.companies = []; saveData(); loadCompaniesTable(); updateDashboard(); showNotification('✅ Todas las empresas eliminadas', 'success'); } }
-function toggleSelectAllCompanies() {}
+function importCustomersFile() {
+    document.getElementById('importCustomersModal').classList.add('active');
+}
+
+function downloadCustomersTemplate() {
+    const data = [{
+        'Nombre': 'Juan Perez',
+        'Empresa': 'Empresa SpA',
+        'RUT': '12345678-9',
+        'Teléfono': '+56912345678',
+        'Correo': 'juan@empresa.com',
+        'Dirección': 'Av. Principal 123',
+        'Giro': 'Comercial'
+    }];
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Plantilla Clientes");
+    
+    XLSX.writeFile(wb, "Plantilla_Clientes.xlsx");
+}
+
+function handleCustomersImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet);
+            
+            let importedCount = 0;
+            
+            json.forEach(row => {
+                // Determine keys ignoring case and spaces
+                const getVal = (possibleKeys) => {
+                    const key = Object.keys(row).find(k => possibleKeys.includes(k.toLowerCase().trim()));
+                    return key ? row[key] : '';
+                };
+                
+                const nombre = getVal(['nombre', 'name']);
+                if (!nombre) return; // Name is required
+                
+                const newCustomer = {
+                    id: generateId(),
+                    nombre: nombre,
+                    empresa: getVal(['empresa', 'company']),
+                    rut: getVal(['rut', 'id']),
+                    telefono: getVal(['teléfono', 'telefono', 'phone']),
+                    correo: getVal(['correo', 'email', 'e-mail']),
+                    direccion: getVal(['dirección', 'direccion', 'address']),
+                    giro: getVal(['giro']),
+                    createdAt: new Date().toISOString(),
+                    totalSales: 0,
+                    quotationsCount: 0,
+                    status: 'activo'
+                };
+                
+                CRM.customers.push(newCustomer);
+                importedCount++;
+            });
+            
+            if (importedCount > 0) {
+                saveData();
+                loadCustomersTable();
+                updateDashboard();
+                showNotification(`✅ ${importedCount} clientes importados`, 'success');
+            } else {
+                showNotification('No se encontraron clientes válidos en el archivo', 'warning');
+            }
+        } catch (error) {
+            console.error(error);
+            showNotification('Error al leer el archivo Excel', 'error');
+        }
+        
+        closeModal('importCustomersModal');
+        event.target.value = ''; // Reset input
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function deleteSelectedCustomers() {
+    const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    
+    document.getElementById('deleteCustomersMessage').innerHTML = `¿Estás seguro de que deseas eliminar los <strong>${checkboxes.length}</strong> clientes seleccionados?`;
+    document.getElementById('deleteCustomersModal').classList.add('active');
+    
+    document.getElementById('confirmDeleteCustomersBtn').onclick = () => {
+        const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
+        CRM.customers = CRM.customers.filter(c => !idsToDelete.includes(c.id));
+        
+        saveData();
+        loadCustomersTable();
+        updateDashboard();
+        
+        const mainCheckbox = document.getElementById('selectAllCustomers');
+        if (mainCheckbox) mainCheckbox.checked = false;
+        updateSelectedCustomersCount();
+        
+        closeModal('deleteCustomersModal');
+        showNotification('✅ Clientes seleccionados eliminados', 'success');
+    };
+}
+
+function deleteAllCustomers() {
+    if (CRM.customers.length === 0) return;
+
+    document.getElementById('deleteCustomersMessage').innerHTML = '¿Estás seguro de que deseas eliminar <strong>TODOS</strong> los clientes? Esta acción no se puede deshacer.';
+    document.getElementById('deleteCustomersModal').classList.add('active');
+    
+    document.getElementById('confirmDeleteCustomersBtn').onclick = () => {
+        CRM.customers = [];
+        saveData();
+        loadCustomersTable();
+        updateDashboard();
+        
+        const mainCheckbox = document.getElementById('selectAllCustomers');
+        if (mainCheckbox) mainCheckbox.checked = false;
+        updateSelectedCustomersCount();
+        
+        closeModal('deleteCustomersModal');
+        showNotification('✅ Todos los clientes eliminados', 'success');
+    };
+}
+
+function toggleSelectAllCustomers() {
+    const mainCheckbox = document.getElementById('selectAllCustomers');
+    const checkboxes = document.querySelectorAll('.customer-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = mainCheckbox ? mainCheckbox.checked : false;
+    });
+    updateSelectedCustomersCount();
+}
+
+function updateSelectedCustomersCount() {
+    const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteSelectedBtn'); // Note: ID in index.html is deleteSelectedBtn
+    const countEl = document.getElementById('selectedCount'); // Note: ID in index.html is selectedCount
+    
+    if (countEl) {
+        countEl.textContent = checkboxes.length;
+    }
+    if (deleteBtn) {
+        deleteBtn.style.display = checkboxes.length > 0 ? 'inline-flex' : 'none';
+    }
+}
+
+function exportCompanies() {
+    if (CRM.companies.length === 0) {
+        showNotification('No hay empresas para exportar', 'warning');
+        return;
+    }
+    
+    // Prepare data for Excel
+    const data = CRM.companies.map(c => ({
+        'Empresa': c.nombre || '',
+        'RUT': c.rut || '',
+        'Teléfono': c.telefono || '',
+        'Correo': c.correo || '',
+        'Dirección': c.direccion || '',
+        'Giro': c.giro || ''
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Empresas");
+    
+    XLSX.writeFile(wb, "Empresas.xlsx");
+    showNotification('✅ Empresas exportadas exitosamente', 'success');
+}
+
+function importCompaniesFile() {
+    document.getElementById('importCompaniesModal').classList.add('active');
+}
+
+function downloadCompaniesTemplate() {
+    const data = [{
+        'Empresa': 'Empresa SpA',
+        'RUT': '12345678-9',
+        'Teléfono': '+56912345678',
+        'Correo': 'contacto@empresa.com',
+        'Dirección': 'Av. Principal 123',
+        'Giro': 'Comercial'
+    }];
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Plantilla Empresas");
+    
+    XLSX.writeFile(wb, "Plantilla_Empresas.xlsx");
+}
+
+function handleCompaniesImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet);
+            
+            let importedCount = 0;
+            
+            json.forEach(row => {
+                // Determine keys ignoring case and spaces
+                const getVal = (possibleKeys) => {
+                    const key = Object.keys(row).find(k => possibleKeys.includes(k.toLowerCase().trim()));
+                    return key ? row[key] : '';
+                };
+                
+                const empresa = getVal(['empresa', 'company', 'nombre']);
+                if (!empresa) return; // Name is required
+                
+                const newCompany = {
+                    id: generateId(),
+                    nombre: empresa,
+                    rut: getVal(['rut', 'id']),
+                    telefono: getVal(['teléfono', 'telefono', 'phone']),
+                    correo: getVal(['correo', 'email', 'e-mail']),
+                    direccion: getVal(['dirección', 'direccion', 'address']),
+                    giro: getVal(['giro']),
+                    createdAt: new Date().toISOString(),
+                    totalSales: 0,
+                    quotationsCount: 0,
+                    status: 'activo'
+                };
+                
+                CRM.companies.push(newCompany);
+                importedCount++;
+            });
+            
+            if (importedCount > 0) {
+                saveData();
+                loadCompaniesTable();
+                updateDashboard();
+                showNotification(`✅ ${importedCount} empresas importadas`, 'success');
+            } else {
+                showNotification('No se encontraron empresas válidas en el archivo', 'warning');
+            }
+        } catch (error) {
+            console.error(error);
+            showNotification('Error al leer el archivo Excel', 'error');
+        }
+        
+        closeModal('importCompaniesModal');
+        event.target.value = ''; // Reset input
+    };
+    reader.readAsArrayBuffer(file);
+}
+function deleteSelectedCompanies() {
+    const checkboxes = document.querySelectorAll('.company-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    
+    document.getElementById('deleteCompaniesMessage').innerHTML = `¿Estás seguro de que deseas eliminar las <strong>${checkboxes.length}</strong> empresas seleccionadas?`;
+    document.getElementById('deleteCompaniesModal').classList.add('active');
+    
+    document.getElementById('confirmDeleteCompaniesBtn').onclick = () => {
+        const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
+        CRM.companies = CRM.companies.filter(c => !idsToDelete.includes(c.id));
+        
+        saveData();
+        loadCompaniesTable();
+        updateDashboard();
+        
+        const mainCheckbox = document.getElementById('selectAllCompanies');
+        if (mainCheckbox) mainCheckbox.checked = false;
+        updateSelectedCompaniesCount();
+        
+        closeModal('deleteCompaniesModal');
+        showNotification('✅ Empresas seleccionadas eliminadas', 'success');
+    };
+}
+
+function deleteAllCompanies() {
+    if (CRM.companies.length === 0) return;
+
+    document.getElementById('deleteCompaniesMessage').innerHTML = '¿Estás seguro de que deseas eliminar <strong>TODAS</strong> las empresas? Esta acción no se puede deshacer.';
+    document.getElementById('deleteCompaniesModal').classList.add('active');
+    
+    document.getElementById('confirmDeleteCompaniesBtn').onclick = () => {
+        CRM.companies = [];
+        saveData();
+        loadCompaniesTable();
+        updateDashboard();
+        
+        const mainCheckbox = document.getElementById('selectAllCompanies');
+        if (mainCheckbox) mainCheckbox.checked = false;
+        updateSelectedCompaniesCount();
+        
+        closeModal('deleteCompaniesModal');
+        showNotification('✅ Todas las empresas eliminadas', 'success');
+    };
+}
+
+function toggleSelectAllCompanies() {
+    const mainCheckbox = document.getElementById('selectAllCompanies');
+    const checkboxes = document.querySelectorAll('.company-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = mainCheckbox ? mainCheckbox.checked : false;
+    });
+    updateSelectedCompaniesCount();
+}
+
+function updateSelectedCompaniesCount() {
+    const checkboxes = document.querySelectorAll('.company-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteSelectedCompaniesBtn');
+    const countEl = document.getElementById('selectedCompaniesCount');
+    
+    if (countEl) {
+        countEl.textContent = checkboxes.length;
+    }
+    if (deleteBtn) {
+        deleteBtn.style.display = checkboxes.length > 0 ? 'inline-flex' : 'none';
+    }
+}
 
 function deleteSelectedQuotations() {
     const checkboxes = document.querySelectorAll('.quotation-checkbox:checked');
     if (checkboxes.length === 0) return;
     
-    if (confirm(`¿Estás seguro de que deseas eliminar las ${checkboxes.length} cotizaciones seleccionadas?`)) {
+    document.getElementById('deleteQuotationsMessage').innerHTML = `¿Estás seguro de que deseas eliminar las <strong>${checkboxes.length}</strong> cotizaciones seleccionadas?`;
+    document.getElementById('deleteQuotationsModal').classList.add('active');
+    
+    document.getElementById('confirmDeleteQuotationsBtn').onclick = () => {
         const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
         CRM.quotations = CRM.quotations.filter(q => !idsToDelete.includes(q.id));
         
@@ -3219,12 +3745,18 @@ function deleteSelectedQuotations() {
         if (mainCheckbox) mainCheckbox.checked = false;
         updateSelectedQuotationsCount();
         
+        closeModal('deleteQuotationsModal');
         showNotification('✅ Cotizaciones seleccionadas eliminadas', 'success');
-    }
+    };
 }
 
 function deleteAllQuotations() {
-    if (confirm('¿Estás seguro de que deseas eliminar TODAS las cotizaciones? Esta acción no se puede deshacer.')) {
+    if (CRM.quotations.length === 0) return;
+
+    document.getElementById('deleteQuotationsMessage').innerHTML = '¿Estás seguro de que deseas eliminar <strong>TODAS</strong> las cotizaciones? Esta acción no se puede deshacer.';
+    document.getElementById('deleteQuotationsModal').classList.add('active');
+    
+    document.getElementById('confirmDeleteQuotationsBtn').onclick = () => {
         CRM.quotations = [];
         CRM.pipeline = []; // Since all quotes are gone, empty pipeline too
         saveData();
@@ -3235,8 +3767,9 @@ function deleteAllQuotations() {
         if (mainCheckbox) mainCheckbox.checked = false;
         updateSelectedQuotationsCount();
         
+        closeModal('deleteQuotationsModal');
         showNotification('✅ Todas las cotizaciones eliminadas', 'success');
-    }
+    };
 }
 
 function toggleSelectAllQuotations() {
