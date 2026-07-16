@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeCharts();
     updateDashboard();
     loadQuoterContent();
+    updateReports();
 });
 
 // ============= LOCAL STORAGE =============
@@ -1174,13 +1175,13 @@ function generateQuotationHTML(quotation, forPrint = false) {
         costoInstalacion = parseFloat(quotation.instalacion.costo) || 0;
     }
     
-    const subtotal = Math.round(baseTotal / (1 + ivaRate));
-    const ivaAmount = Math.round(baseTotal - subtotal);
+    const subtotal = Math.round(baseTotal);
+    const ivaAmount = Math.round(baseTotal * ivaRate);
     
     const envioDisplay = quotation.envio ? (quotation.envio.tipo === 'Monto Manual' ? formatPrecio(costoEnvio) : quotation.envio.tipo) : '$0';
     const instalacionDisplay = quotation.instalacion ? (quotation.instalacion.tipo === 'Monto Manual' ? formatPrecio(costoInstalacion) : quotation.instalacion.tipo) : '$0';
     
-    const totalFinal = baseTotal + costoEnvio + costoInstalacion;
+    const totalFinal = baseTotal + ivaAmount + costoEnvio + costoInstalacion;
     const diasFabDisplay = quotation.diasFabricacion || 0;
 
     const materials = { placas: {}, adhesivos: {}, laminados: {} };
@@ -1207,8 +1208,8 @@ function generateQuotationHTML(quotation, forPrint = false) {
                 <td>${item.detalles.adhesivo.tipo.replace(/SIN ADHESIVO|SIN/g, '-')}</td>
                 <td>${item.detalles.laminado.tipo.replace(/SIN LAMINADO|SIN/g, '-')}</td>
                 <td>${item.detalles.anclaje.tipo.replace(/SIN ANCLAJE|SIN/g, '-')}</td>
-                <td style="text-align:right">${formatPrecio(Math.round(item.detalles.precioFinalPorUnidad / (1 + ivaRate)))}</td>
-                <td style="text-align:right; font-weight:700">${formatPrecio(Math.round(item.precio / (1 + ivaRate)))}</td>
+                <td style="text-align:right">${formatPrecio(Math.round(item.detalles.precioFinalPorUnidad))}</td>
+                <td style="text-align:right; font-weight:700">${formatPrecio(Math.round(item.precio))}</td>
             </tr>
         `;
     }).join('');
@@ -1222,7 +1223,7 @@ function generateQuotationHTML(quotation, forPrint = false) {
         <div class="quotation-document">
             <div class="doc-header">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <img src="https://letreroscaperuso.cl/wp-content/uploads/2023/06/LOGO-LETREROSCAPERUSO-2023-04-scaled-e1774620911234.png" alt="Logo" style="height: 60px; width: auto; object-fit: contain;">
+                    <img src="https://letreroscaperuso.cl/wp-content/uploads/2026/04/logo-caperso_Mesa-de-trabajo-1-copia-3.png" alt="Logo" style="height: 60px; width: auto; object-fit: contain;">
                     <div>
                         <div class="doc-title">Cotización N° ${quotation.numero}</div>
                         <div style="color: var(--gray); font-size: 0.9rem;">Fecha de Emisión: ${formatDate(quotation.fecha)}</div>
@@ -2270,6 +2271,285 @@ function updateReports() {
     // Update company and customer KPIs
     updateCompanyKPIs();
     updateCustomerKPIs();
+}
+
+function exportReportCSV() {
+    try {
+        const approvedQuotes = CRM.quotations.filter(q => q.status === 'aprobada' || q.status === 'aprobado');
+        const totalSales = approvedQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
+        const conversionRate = CRM.quotations.length > 0 ? (approvedQuotes.length / CRM.quotations.length) * 100 : 0;
+        const avgTicket = approvedQuotes.length > 0 ? totalSales / approvedQuotes.length : 0;
+        const pendingTasks = CRM.tasks.filter(t => t.status !== 'completed').length;
+        
+        const lostQuotes = CRM.quotations.filter(q => q.status === 'rechazada' || q.status === 'rechazado');
+        const lostTotal = lostQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
+        
+        const pendingQuotes = CRM.quotations.filter(q => q.status !== 'aprobada' && q.status !== 'aprobado' && q.status !== 'rechazada' && q.status !== 'rechazado');
+        const pendingTotal = pendingQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
+
+        let csvRows = [];
+        
+        // Header
+        csvRows.push(['REPORTE DE GESTION Y ANALISIS']);
+        csvRows.push(['Fecha de Exportacion', new Date().toLocaleString()]);
+        csvRows.push(['']);
+        
+        // Summary Metrics
+        csvRows.push(['METRICAS GENERALES']);
+        csvRows.push(['Ventas Totales', totalSales]);
+        csvRows.push(['Tasa de Conversion (%)', conversionRate.toFixed(2)]);
+        csvRows.push(['Ticket Promedio', avgTicket.toFixed(0)]);
+        csvRows.push(['Tareas Pendientes', pendingTasks]);
+        csvRows.push(['Total Ganado', totalSales]);
+        csvRows.push(['Total Perdido', lostTotal]);
+        csvRows.push(['Total Pendiente', pendingTotal]);
+        csvRows.push(['']);
+        
+        // Entity Stats
+        csvRows.push(['ESTADISTICAS POR ENTIDAD']);
+        csvRows.push(['Total Empresas', CRM.companies.length]);
+        csvRows.push(['Total Clientes', CRM.customers.length]);
+        csvRows.push(['']);
+        
+        // Detailed Sales Data
+        csvRows.push(['DETALLE DE COTIZACIONES']);
+        csvRows.push(['ID', 'Cliente', 'Empresa', 'Estado', 'Total', 'Fecha']);
+        CRM.quotations.forEach(q => {
+            csvRows.push([
+                q.id,
+                q.cliente ? q.cliente.nombre : 'N/A',
+                q.cliente ? q.cliente.empresa : 'N/A',
+                q.status,
+                q.total || 0,
+                q.fecha || 'N/A'
+            ]);
+        });
+        
+        // Convert to CSV string
+        const csvString = csvRows.map(row => row.join(',')).join('\n');
+        
+        // Create download
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `reporte_crm_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('✅ Reporte exportado correctamente', 'success');
+        }
+    } catch (error) {
+        console.error('Error al exportar reporte:', error);
+        showNotification('❌ Error al generar el reporte', 'danger');
+    }
+}
+
+function generateHtmlPresentation() {
+    try {
+        const approvedQuotes = CRM.quotations.filter(q => q.status === 'aprobada' || q.status === 'aprobado');
+        const totalSales = approvedQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
+        const conversionRate = CRM.quotations.length > 0 ? (approvedQuotes.length / CRM.quotations.length) * 100 : 0;
+        const avgTicket = approvedQuotes.length > 0 ? totalSales / approvedQuotes.length : 0;
+        const pendingTasks = CRM.tasks.filter(t => t.status !== 'completed').length;
+        
+        const formatMoney = (val) => '$' + val.toLocaleString('es-CL');
+        const logoUrl = 'https://letreroscaperuso.cl/wp-content/uploads/2026/04/logo-caperso_Mesa-de-trabajo-1-copia-3.png';
+
+        const reportHtml = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación de Gestión - Letreros Caperuso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ef236b;
+            --secondary: #1da2f5;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --success: #10b981;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 60px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 30px;
+        }
+        .logo {
+            height: 60px;
+        }
+        .report-info {
+            text-align: right;
+        }
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .kpi-card {
+            padding: 25px;
+            border-radius: 15px;
+            background: var(--light);
+            border: 1px solid #e2e8f0;
+        }
+        .kpi-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--gray);
+            letter-spacing: 1px;
+        }
+        .kpi-card .value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            display: inline-block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            text-align: left;
+            padding: 15px;
+            background: var(--dark);
+            color: white;
+            font-size: 0.85rem;
+        }
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        @media print {
+            body { padding: 0; background: white; }
+            .container { box-shadow: none; width: 100%; padding: 20px; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="${logoUrl}" alt="Logo" class="logo">
+            <div class="report-info">
+                <h1>Presentación de Gestión</h1>
+                <p style="margin:5px 0; color:var(--gray)">Generado el: ${new Date().toLocaleDateString('es-CL')}</p>
+            </div>
+        </header>
+
+        <div class="section-title">Resumen Ejecutivo</div>
+        <div class="grid">
+            <div class="kpi-card">
+                <h3>Ventas Totales (Aprobadas)</h3>
+                <div class="value" style="color:var(--primary)">${formatMoney(totalSales)}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Tasa de Conversión</h3>
+                <div class="value" style="color:var(--success)">${conversionRate.toFixed(1)}%</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Ticket Promedio</h3>
+                <div class="value" style="color:var(--secondary)">${formatMoney(avgTicket)}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Tareas por Completar</h3>
+                <div class="value">${pendingTasks}</div>
+            </div>
+        </div>
+
+        <div class="section-title">Últimas Cotizaciones Aprobadas</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>N°</th>
+                    <th>Cliente</th>
+                    <th>Empresa</th>
+                    <th>Total</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${approvedQuotes.slice(0, 10).map(q => `
+                    <tr>
+                        <td>#${q.numero || q.id.slice(0, 4)}</td>
+                        <td>${q.cliente ? q.cliente.nombre : 'N/A'}</td>
+                        <td>${q.cliente ? q.cliente.empresa : 'N/A'}</td>
+                        <td><strong>${formatMoney(q.total || 0)}</strong></td>
+                        <td>${q.fecha || 'N/A'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 60px; text-align: center; color: var(--gray); font-size: 0.8rem;">
+            © ${new Date().getFullYear()} Letreros Caperuso - Sistema de Gestión Comercial Privado
+        </div>
+
+        <div class="no-print" style="margin-top: 40px; text-align: center;">
+            <button onclick="window.print()" style="padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700;">
+                <i class="fas fa-print"></i> Imprimir Presentación
+            </button>
+        </div>
+    </div>
+</body>
+</html>`;
+
+        const win = window.open('', '_blank');
+        win.document.write(reportHtml);
+        win.document.close();
+        showNotification('✅ Presentación generada correctamente', 'success');
+    } catch (error) {
+        console.error('Error al generar presentación:', error);
+        showNotification('❌ Error al generar la presentación', 'danger');
+    }
 }
 
 function renderCalendar() {
@@ -3920,12 +4200,12 @@ function generatePOSQuotationHTML(quotation) {
         costoInstalacion = parseFloat(quotation.instalacion.costo) || 0;
     }
     
-    const subtotal = Math.round(baseTotal / (1 + ivaRate));
-    const ivaAmount = Math.round(baseTotal - subtotal);
-    const totalFinal = baseTotal + costoEnvio + costoInstalacion;
+    const subtotal = Math.round(baseTotal);
+    const ivaAmount = Math.round(baseTotal * ivaRate);
+    const totalFinal = baseTotal + ivaAmount + costoEnvio + costoInstalacion;
 
     const itemsHtml = quotation.items.map((item, index) => {
-        const itemSubtotalNeto = Math.round(item.precio / (1 + ivaRate));
+        const itemSubtotalNeto = Math.round(item.precio);
         return `
             <div class="pos-item">
                 <div style="font-weight: bold;">${index + 1}. ${item.nombre} x ${item.cantidad}</div>
@@ -3936,7 +4216,7 @@ function generatePOSQuotationHTML(quotation) {
                     Lam: ${item.detalles.laminado.tipo.replace(/SIN LAMINADO|SIN/g, '-')}
                 </div>
                 <div style="text-align: right; font-weight: bold; font-size: 11px; margin-top: 2px;">
-                    ${formatPrecio(Math.round(item.detalles.precioFinalPorUnidad / (1 + ivaRate)))} c/u | Total: ${formatPrecio(itemSubtotalNeto)} (Neto)
+                    ${formatPrecio(Math.round(item.detalles.precioFinalPorUnidad))} c/u | Total: ${formatPrecio(itemSubtotalNeto)} (Neto)
                 </div>
             </div>
             <div class="dashed-line"></div>
@@ -4035,7 +4315,7 @@ function generatePOSQuotationHTML(quotation) {
         </head>
         <body>
             <div class="text-center">
-                <img src="https://letreroscaperuso.cl/wp-content/uploads/2023/06/LOGO-LETREROSCAPERUSO-2023-04-scaled-e1774620911234.png" alt="Logo" style="height: 35px; width: auto; object-fit: contain;">
+                <img src="https://letreroscaperuso.cl/wp-content/uploads/2026/04/logo-caperso_Mesa-de-trabajo-1-copia-3.png" alt="Logo" style="height: 35px; width: auto; object-fit: contain;">
                 <div class="title">LETREROS CAPERUSO</div>
                 <div class="subtitle">Diseño Industrial EIRL</div>
                 <div class="subtitle">RUT: 76.491.931-9</div>

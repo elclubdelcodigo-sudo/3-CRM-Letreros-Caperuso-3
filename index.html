@@ -1942,19 +1942,23 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img src="https://letreroscaperuso.cl/wp-content/uploads/2023/06/LOGO-LETREROSCAPERUSO-2023-04-scaled-e1774620911234.png" alt="Letreros Caperuso" class="sidebar-logo">
+            <img src="https://letreroscaperuso.cl/wp-content/uploads/2026/04/logo-caperso_Mesa-de-trabajo-1-copia-3.png" alt="Letreros Caperuso" class="sidebar-logo">
             <p>Sistema de Gestión Comercial</p>
         </div>
 
         <nav class="sidebar-nav">
             <div class="nav-section">
                 <div class="nav-section-title">Principal</div>
+                <a class="nav-item active" data-page="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
                 <a class="nav-item" data-page="companies">
                     <i class="fas fa-building"></i>
                     <span>Empresas</span>
                     <span class="badge" id="companiesCount">0</span>
                 </a>
-                <a class="nav-item active" data-page="customers">
+                <a class="nav-item" data-page="customers">
                     <i class="fas fa-users"></i>
                     <span>Clientes</span>
                     <span class="badge" id="customersCount">0</span>
@@ -1993,10 +1997,6 @@
                 <a class="nav-item" data-page="tasks">
                     <i class="fas fa-tasks"></i>
                     <span>Tareas</span>
-                </a>
-                <a class="nav-item" data-page="reports">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Reportes</span>
                 </a>
                 <a class="nav-item" data-page="library">
                     <i class="fas fa-images"></i>
@@ -3157,7 +3157,7 @@
         </section>
 
         <!-- Customers Page -->
-        <section id="customers" class="page-section active">
+        <section id="customers" class="page-section">
             <div class="page-header">
                 <h2>👥 Clientes</h2>
                 <div class="actions">
@@ -3583,7 +3583,7 @@
         </section>
 
         <!-- Reports Page -->
-        <section id="reports" class="page-section">
+        <section id="reports" class="page-section active">
             <div class="page-header">
                 <div>
                     <h2>📊 Centro de Reportes y Análisis</h2>
@@ -3594,8 +3594,11 @@
                     <button class="btn btn-primary" onclick="updateReports()">
                         <i class="fas fa-sync-alt"></i> Actualizar Datos
                     </button>
-                    <button class="btn btn-outline">
-                        <i class="fas fa-download"></i> Exportar PDF
+                    <button class="btn btn-outline" onclick="exportReportCSV()">
+                        <i class="fas fa-file-csv"></i> Exportar Datos (CSV)
+                    </button>
+                    <button class="btn btn-primary" onclick="generateHtmlPresentation()" style="background: var(--secondary); border-color: var(--secondary);">
+                        <i class="fas fa-desktop"></i> Generar Presentación
                     </button>
                 </div>
             </div>
